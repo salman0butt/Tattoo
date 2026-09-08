@@ -8,7 +8,8 @@ This file is the durable handoff for fresh autonomous runs. GitHub state remains
 
 Current branch: `feat/bootstrap-core`
 Current PR: #1
-Last known PR head: `933fd6f407cb2c23b23a4d29be5603e00fed91a2`
+Last verified implementation head: `f911594527f3e05c386fb3949c8ce4d4ea299c40`
+Last verified CI run: `34233759403` — Node 22 and Node 24 both green, including frozen install, `pnpm check`, and packed-package consumer import.
 
 ### M1 completion checklist
 
@@ -17,27 +18,36 @@ Last known PR head: `933fd6f407cb2c23b23a4d29be5603e00fed91a2`
 - [x] Path deny / allow-only / operation filters authored
 - [x] Dependency guard authored
 - [x] Diff budgets and decision precedence authored
-- [x] Validation, deterministic ordering, path normalization tests authored
+- [x] Runtime policy and normalized `ChangeSet` validation covered by tests
+- [x] Deterministic ordering and path normalization covered by tests
 - [x] Architecture, security model, roadmap, and Superpowers M1 records authored
-- [ ] `pnpm-lock.yaml` committed
-- [ ] Install/format/lint/typecheck/tests/build/public-import observed green
-- [ ] Skeptical full-diff review completed; all Critical/Important findings resolved
-- [ ] Exact PR-head GitHub Actions green
+- [x] `pnpm-lock.yaml` committed
+- [x] Install/format/lint/typecheck/tests/build observed green on the verified implementation head
+- [x] Packed-package public import observed green on the verified implementation head
+- [x] Skeptical full-diff review completed; two Important findings were fixed and no Critical findings were found
+- [ ] Final exact PR-head GitHub Actions green after durable status/roadmap update
 - [ ] PR merged to `main`
 - [ ] Post-merge `main` CI green and final SHA recorded
 
-### Last verified blocker
+### Review findings resolved
 
-CI run 34213417046 failed before install because `actions/setup-node` cache requires `pnpm-lock.yaml`, which is absent. Do not weaken frozen-lockfile CI. Generate the lockfile from the committed manifests, commit it to the M1 branch, then rerun the full gate.
+1. Core previously validated policy configuration but could accept malformed normalized file/dependency facts when no relevant rule forced access to them. Added test-first validation for invalid operations, rename facts, paths, line metrics, and dependency map values.
+2. CI previously imported `packages/core/dist/index.js` directly. It now packs `@tattoo-ai/core`, installs the tarball into a clean consumer directory, and imports the package by its public name.
+
+### Current next action
+
+Verify CI for the exact final PR head containing this durable status update, re-check the complete PR diff and review threads, merge only if every gate remains green, then verify post-merge `main` CI. Do not begin M2.
 
 ## Milestone ledger
 
-The detailed product roadmap is `docs/roadmap.md`. This ledger is operational state, not permission to advance scope.
+Detailed scopes are defined in `docs/roadmap.md`.
 
-| Milestone               | Status      | Autonomous action                         |
-| ----------------------- | ----------- | ----------------------------------------- |
-| M1 — Deterministic Core | IN PROGRESS | Finish verification/review/CI/merge only. |
-| M2+                     | DEFERRED    | Do not implement during M1-scoped runs.   |
+- **M1 — Deterministic Core:** IN PROGRESS — finish final CI, merge, and post-merge verification only.
+- **M2 — Configuration and CLI:** NOT STARTED — do not implement during M1-scoped runs.
+- **M3 — Enforcement Adapters:** NOT STARTED — do not implement during M1-scoped runs.
+- **M4 — MCP and Workflow Integrations:** NOT STARTED — do not implement during M1-scoped runs.
+- **M5 — Natural-Language Rule Authoring:** NOT STARTED — do not implement during M1-scoped runs.
+- **M6 — Benchmarks, Hardening, and First Release:** NOT STARTED — do not implement during M1-scoped runs.
 
 ## Fresh-run recovery order
 
@@ -46,4 +56,4 @@ The detailed product roadmap is `docs/roadmap.md`. This ledger is operational st
 3. Reconcile this file with GitHub. GitHub wins if stale.
 4. Priority: broken main → failed CI → unresolved Critical/Important review findings → unfinished current PR/branch → unfinished current milestone task.
 5. Update this file whenever durable milestone state materially changes.
-6. When M1 is genuinely complete and merged, mark it COMPLETE with final main SHA and post-merge CI evidence. M1-scoped runs must then remain read-only and must not begin M2.
+6. When M1 is genuinely complete and merged, M1-scoped runs must remain read-only and must not begin M2.
