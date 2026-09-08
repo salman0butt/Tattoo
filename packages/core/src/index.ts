@@ -146,7 +146,7 @@ function validatePolicy(policy: Policy): void {
       );
     if (rule.type === 'path-deny' || rule.type === 'path-allow-only') {
       if (
-        !Array.isArray(rule.patterns as unknown) ||
+        !Array.isArray(rule.patterns) ||
         rule.patterns.length === 0 ||
         rule.patterns.some((p) => typeof p !== 'string' || p.trim() === '')
       )
@@ -171,7 +171,7 @@ function validatePolicy(policy: Policy): void {
       ].filter((v) => v !== undefined);
       if (
         values.length === 0 ||
-        values.some((v) => !Number.isSafeInteger(v) || (v as number) < 0)
+        values.some((v) => !Number.isSafeInteger(v) || (v) < 0)
       )
         throw new PolicyConfigurationError(
           `${rule.id} requires non-negative integer budgets`,
