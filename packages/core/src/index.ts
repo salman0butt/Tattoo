@@ -239,9 +239,7 @@ function evaluatePathRule(
   return out;
 }
 
-function dependencyEvents(
-  changeSet: ChangeSet,
-): Array<{
+function dependencyEvents(changeSet: ChangeSet): Array<{
   kind: (typeof depKinds)[number];
   name: string;
   scope: 'production' | 'development';
