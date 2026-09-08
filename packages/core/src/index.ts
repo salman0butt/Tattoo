@@ -55,10 +55,7 @@ export interface DiffBudgetRule extends RuleBase {
   maxDeletedLines?: number;
 }
 export type Rule =
-  | PathDenyRule
-  | PathAllowOnlyRule
-  | DependencyGuardRule
-  | DiffBudgetRule;
+  PathDenyRule | PathAllowOnlyRule | DependencyGuardRule | DiffBudgetRule;
 export interface Policy {
   rules: readonly Rule[];
   mode?: Mode;
@@ -122,10 +119,7 @@ export function normalizeRepositoryPath(input: string): string {
 }
 
 function validatePolicy(policy: Policy): void {
-  if (
-    !policy ||
-    !Array.isArray((policy as { rules?: unknown }).rules)
-  )
+  if (!policy || !Array.isArray((policy as { rules?: unknown }).rules))
     throw new PolicyConfigurationError('Policy.rules must be an array');
   const rules = policy.rules;
   if (policy.mode !== undefined && !modes.includes(policy.mode))
@@ -293,10 +287,7 @@ export function evaluatePolicy(
   changeSet: ChangeSet,
 ): EvaluationResult {
   validatePolicy(policy);
-  if (
-    !changeSet ||
-    !Array.isArray((changeSet as { files?: unknown }).files)
-  )
+  if (!changeSet || !Array.isArray((changeSet as { files?: unknown }).files))
     throw new PolicyConfigurationError('ChangeSet.files must be an array');
   const files = changeSet.files;
   const violations: Violation[] = [];
