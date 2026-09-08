@@ -3,6 +3,7 @@ import {
   evaluatePolicy,
   normalizeRepositoryPath,
   PolicyConfigurationError,
+  type ChangeSet,
   type Policy,
 } from './index.js';
 
@@ -177,12 +178,42 @@ describe('validation and determinism', () => {
     { rules: [{ id: 'x', type: 'unknown' }] },
     { rules: [{ id: '', type: 'path-deny', patterns: ['a'] }] },
     { rules: [{ id: 'x', type: 'path-deny', patterns: [''] }] },
+    { rules: [{ id: 'x', type: 'path-deny' }] },
+    { rules: [{ id: 'x', type: 'path-deny', patterns: ['a'], effect: 'nope' }] },
+    {
+      rules: [
+        {
+          id: 'x',
+          type: 'path-deny',
+          patterns: ['a'],
+          operations: ['move'],
+        },
+      ],
+    },
+    { rules: [{ id: 'x', type: 'dependency-guard', forbid: ['changed'] }] },
     { rules: [{ id: 'x', type: 'diff-budget', maxChangedFiles: -1 }] },
   ])('rejects invalid policy %#', (policy) =>
     expect(() => evaluatePolicy(policy as Policy, files())).toThrow(
       PolicyConfigurationError,
     ),
   );
+
+  it.each([
+    { files: [{ operation: 'move', path: 'a' }] },
+    { files: [{ operation: 'rename', path: 'b' }] },
+    { files: [{ operation: 'modify', path: '' }] },
+    { files: [{ operation: 'modify', path: 'a', addedLines: -1 }] },
+    { files: [{ operation: 'modify', path: 'a', deletedLines: 1.5 }] },
+    {
+      files: [],
+      dependencies: { before: { production: { react: 1 } } },
+    },
+  ])('rejects invalid normalized change set %#', (changeSet) =>
+    expect(() =>
+      evaluatePolicy({ rules: [] }, changeSet as unknown as ChangeSet),
+    ).toThrow(PolicyConfigurationError),
+  );
+
   it('does not mutate inputs and produces stable ordering', () => {
     const policy: Policy = {
       rules: [
