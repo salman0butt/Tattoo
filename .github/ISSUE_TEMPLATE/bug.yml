@@ -1,0 +1,17 @@
+name: Bug report
+description: Report reproducible incorrect behavior
+body:
+  - type: textarea
+    attributes:
+      label: What happened?
+      description: Include a minimal policy and ChangeSet when relevant.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Node and package version

@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    strategy:
+      matrix:
+        node: [22, 24]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - name: Packed package consumer import
+        shell: bash
+        run: |
+          consumer="$RUNNER_TEMP/tattoo-consumer"
+          mkdir -p "$consumer"
+          (cd packages/core && pnpm pack --pack-destination "$consumer")
+          cd "$consumer"
+          npm init -y >/dev/null
+          npm install --ignore-scripts ./*.tgz
+          node --input-type=module -e "import('@tattoo-ai/core').then(m => { if (typeof m.evaluatePolicy !== 'function') process.exit(1) })"
+      - name: Clean git status
+        shell: bash
+        run: |
+          status="$(git status --porcelain)"
+          printf '%s\n' "$status"
+          test -z "$status"
