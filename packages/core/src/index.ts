@@ -55,7 +55,10 @@ export interface DiffBudgetRule extends RuleBase {
   maxDeletedLines?: number;
 }
 export type Rule =
-  PathDenyRule | PathAllowOnlyRule | DependencyGuardRule | DiffBudgetRule;
+  | PathDenyRule
+  | PathAllowOnlyRule
+  | DependencyGuardRule
+  | DiffBudgetRule;
 export interface Policy {
   rules: readonly Rule[];
   mode?: Mode;
@@ -180,6 +183,85 @@ function validatePolicy(policy: Policy): void {
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function validateDependencyMap(value: unknown, label: string): void {
+  if (value === undefined) return;
+  if (!isRecord(value))
+    throw new PolicyConfigurationError(`${label} must be a dependency map`);
+  for (const [name, version] of Object.entries(value)) {
+    if (name.trim() === '')
+      throw new PolicyConfigurationError(`${label} has an empty dependency name`);
+    if (typeof version !== 'string' || version.length === 0)
+      throw new PolicyConfigurationError(
+        `${label}.${name} must have a non-empty string version`,
+      );
+  }
+}
+
+function validateChangeSet(changeSet: ChangeSet): void {
+  if (!isRecord(changeSet) || !Array.isArray(changeSet.files))
+    throw new PolicyConfigurationError('ChangeSet.files must be an array');
+
+  for (const [index, file] of changeSet.files.entries()) {
+    if (!isRecord(file))
+      throw new PolicyConfigurationError(`ChangeSet.files[${index}] must be an object`);
+    if (
+      typeof file.operation !== 'string' ||
+      !operations.includes(file.operation as FileOperation)
+    )
+      throw new PolicyConfigurationError(
+        `ChangeSet.files[${index}] has invalid operation`,
+      );
+    if (typeof file.path !== 'string')
+      throw new PolicyConfigurationError(
+        `ChangeSet.files[${index}].path must be a string`,
+      );
+    normalizeRepositoryPath(file.path);
+
+    if (file.operation === 'rename') {
+      if (typeof file.previousPath !== 'string' || file.previousPath.length === 0)
+        throw new PolicyConfigurationError(
+          `Rename to ${file.path} requires previousPath`,
+        );
+      normalizeRepositoryPath(file.previousPath);
+    }
+
+    for (const field of ['addedLines', 'deletedLines'] as const) {
+      const value = file[field];
+      if (
+        value !== undefined &&
+        (!Number.isSafeInteger(value) || (value as number) < 0)
+      )
+        throw new PolicyConfigurationError(
+          `ChangeSet.files[${index}].${field} must be a non-negative integer`,
+        );
+    }
+  }
+
+  if (changeSet.dependencies === undefined) return;
+  if (!isRecord(changeSet.dependencies))
+    throw new PolicyConfigurationError('ChangeSet.dependencies must be an object');
+  for (const phase of ['before', 'after'] as const) {
+    const snapshot = changeSet.dependencies[phase];
+    if (snapshot === undefined) continue;
+    if (!isRecord(snapshot))
+      throw new PolicyConfigurationError(
+        `ChangeSet.dependencies.${phase} must be an object`,
+      );
+    validateDependencyMap(
+      snapshot.production,
+      `ChangeSet.dependencies.${phase}.production`,
+    );
+    validateDependencyMap(
+      snapshot.development,
+      `ChangeSet.dependencies.${phase}.development`,
+    );
+  }
+}
+
 function violation(
   rule: Rule,
   reason: string,
@@ -287,8 +369,7 @@ export function evaluatePolicy(
   changeSet: ChangeSet,
 ): EvaluationResult {
   validatePolicy(policy);
-  if (!changeSet || !Array.isArray((changeSet as { files?: unknown }).files))
-    throw new PolicyConfigurationError('ChangeSet.files must be an array');
+  validateChangeSet(changeSet);
   const files = changeSet.files;
   const violations: Violation[] = [];
   for (const rule of policy.rules) {
