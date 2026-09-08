@@ -1,6 +1,7 @@
 {
   "name": "tattoo-ai",
   "private": true,
+  "type": "module",
   "packageManager": "pnpm@10.15.1",
   "engines": {
     "node": ">=22"
