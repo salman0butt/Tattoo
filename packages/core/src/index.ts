@@ -55,7 +55,10 @@ export interface DiffBudgetRule extends RuleBase {
   maxDeletedLines?: number;
 }
 export type Rule =
-  PathDenyRule | PathAllowOnlyRule | DependencyGuardRule | DiffBudgetRule;
+  | PathDenyRule
+  | PathAllowOnlyRule
+  | DependencyGuardRule
+  | DiffBudgetRule;
 export interface Policy {
   rules: readonly Rule[];
   mode?: Mode;
@@ -119,12 +122,16 @@ export function normalizeRepositoryPath(input: string): string {
 }
 
 function validatePolicy(policy: Policy): void {
-  if (!policy || !Array.isArray(policy.rules))
+  if (
+    !policy ||
+    !Array.isArray((policy as { rules?: unknown }).rules)
+  )
     throw new PolicyConfigurationError('Policy.rules must be an array');
+  const rules = policy.rules;
   if (policy.mode !== undefined && !modes.includes(policy.mode))
     throw new PolicyConfigurationError(`Unknown mode: ${String(policy.mode)}`);
   const ids = new Set<string>();
-  for (const rule of policy.rules) {
+  for (const rule of rules) {
     if (!rule || typeof rule.id !== 'string' || rule.id.trim() === '')
       throw new PolicyConfigurationError('Every rule requires a non-empty id');
     if (ids.has(rule.id))
@@ -145,7 +152,7 @@ function validatePolicy(policy: Policy): void {
       );
     if (rule.type === 'path-deny' || rule.type === 'path-allow-only') {
       if (
-        !Array.isArray(rule.patterns) ||
+        !Array.isArray(rule.patterns as unknown) ||
         rule.patterns.length === 0 ||
         rule.patterns.some((p) => typeof p !== 'string' || p.trim() === '')
       )
@@ -286,12 +293,16 @@ export function evaluatePolicy(
   changeSet: ChangeSet,
 ): EvaluationResult {
   validatePolicy(policy);
-  if (!changeSet || !Array.isArray(changeSet.files))
+  if (
+    !changeSet ||
+    !Array.isArray((changeSet as { files?: unknown }).files)
+  )
     throw new PolicyConfigurationError('ChangeSet.files must be an array');
+  const files = changeSet.files;
   const violations: Violation[] = [];
   for (const rule of policy.rules) {
     if (rule.type === 'path-deny' || rule.type === 'path-allow-only')
-      violations.push(...evaluatePathRule(rule, changeSet.files));
+      violations.push(...evaluatePathRule(rule, files));
     if (rule.type === 'dependency-guard') {
       const forbidden = rule.forbid ?? depKinds;
       for (const event of dependencyEvents(changeSet))
@@ -307,15 +318,9 @@ export function evaluatePolicy(
     }
     if (rule.type === 'diff-budget') {
       const metrics = {
-        changedFiles: changeSet.files.length,
-        addedLines: changeSet.files.reduce(
-          (n, f) => n + (f.addedLines ?? 0),
-          0,
-        ),
-        deletedLines: changeSet.files.reduce(
-          (n, f) => n + (f.deletedLines ?? 0),
-          0,
-        ),
+        changedFiles: files.length,
+        addedLines: files.reduce((n, f) => n + (f.addedLines ?? 0), 0),
+        deletedLines: files.reduce((n, f) => n + (f.deletedLines ?? 0), 0),
       };
       for (const [key, limit] of [
         ['changedFiles', rule.maxChangedFiles],
