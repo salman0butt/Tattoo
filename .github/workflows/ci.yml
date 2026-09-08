@@ -25,5 +25,13 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
-      - name: Built package import
-        run: node --input-type=module -e "import('./packages/core/dist/index.js').then(m => { if (typeof m.evaluatePolicy !== 'function') process.exit(1) })"
+      - name: Packed package consumer import
+        shell: bash
+        run: |
+          consumer="$RUNNER_TEMP/tattoo-consumer"
+          mkdir -p "$consumer"
+          (cd packages/core && pnpm pack --pack-destination "$consumer")
+          cd "$consumer"
+          npm init -y >/dev/null
+          npm install --ignore-scripts ./*.tgz
+          node --input-type=module -e "import('@tattoo-ai/core').then(m => { if (typeof m.evaluatePolicy !== 'function') process.exit(1) })"
