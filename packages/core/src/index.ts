@@ -55,10 +55,7 @@ export interface DiffBudgetRule extends RuleBase {
   maxDeletedLines?: number;
 }
 export type Rule =
-  | PathDenyRule
-  | PathAllowOnlyRule
-  | DependencyGuardRule
-  | DiffBudgetRule;
+  PathDenyRule | PathAllowOnlyRule | DependencyGuardRule | DiffBudgetRule;
 export interface Policy {
   rules: readonly Rule[];
   mode?: Mode;
@@ -193,7 +190,9 @@ function validateDependencyMap(value: unknown, label: string): void {
     throw new PolicyConfigurationError(`${label} must be a dependency map`);
   for (const [name, version] of Object.entries(value)) {
     if (name.trim() === '')
-      throw new PolicyConfigurationError(`${label} has an empty dependency name`);
+      throw new PolicyConfigurationError(
+        `${label} has an empty dependency name`,
+      );
     if (typeof version !== 'string' || version.length === 0)
       throw new PolicyConfigurationError(
         `${label}.${name} must have a non-empty string version`,
@@ -207,7 +206,9 @@ function validateChangeSet(changeSet: ChangeSet): void {
 
   for (const [index, file] of changeSet.files.entries()) {
     if (!isRecord(file))
-      throw new PolicyConfigurationError(`ChangeSet.files[${index}] must be an object`);
+      throw new PolicyConfigurationError(
+        `ChangeSet.files[${index}] must be an object`,
+      );
     if (
       typeof file.operation !== 'string' ||
       !operations.includes(file.operation as FileOperation)
@@ -222,7 +223,10 @@ function validateChangeSet(changeSet: ChangeSet): void {
     normalizeRepositoryPath(file.path);
 
     if (file.operation === 'rename') {
-      if (typeof file.previousPath !== 'string' || file.previousPath.length === 0)
+      if (
+        typeof file.previousPath !== 'string' ||
+        file.previousPath.length === 0
+      )
         throw new PolicyConfigurationError(
           `Rename to ${file.path} requires previousPath`,
         );
@@ -243,7 +247,9 @@ function validateChangeSet(changeSet: ChangeSet): void {
 
   if (changeSet.dependencies === undefined) return;
   if (!isRecord(changeSet.dependencies))
-    throw new PolicyConfigurationError('ChangeSet.dependencies must be an object');
+    throw new PolicyConfigurationError(
+      'ChangeSet.dependencies must be an object',
+    );
   for (const phase of ['before', 'after'] as const) {
     const snapshot = changeSet.dependencies[phase];
     if (snapshot === undefined) continue;
