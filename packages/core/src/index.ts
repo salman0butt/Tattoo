@@ -214,7 +214,7 @@ function evaluatePathRule(
   rule: PathDenyRule | PathAllowOnlyRule,
   files: readonly FileChange[],
 ): Violation[] {
-  const match = picomatch(rule.patterns, { dot: true });
+  const match = picomatch([...rule.patterns], { dot: true });
   const out: Violation[] = [];
   for (const file of files) {
     if (rule.operations && !rule.operations.includes(file.operation)) continue;
@@ -265,17 +265,17 @@ function dependencyEvents(changeSet: ChangeSet): Array<{
           kind: scope === 'production' ? 'new-production' : 'new-development',
           name,
           scope,
-          after: after[name],
+          after: after[name]!,
         });
       else if (!(name in after))
-        result.push({ kind: 'removed', name, scope, before: before[name] });
+        result.push({ kind: 'removed', name, scope, before: before[name]! });
       else if (before[name] !== after[name])
         result.push({
           kind: 'version-change',
           name,
           scope,
-          before: before[name],
-          after: after[name],
+          before: before[name]!,
+          after: after[name]!,
         });
     }
   }
