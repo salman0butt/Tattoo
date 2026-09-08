@@ -36,4 +36,8 @@ jobs:
           npm install --ignore-scripts ./*.tgz
           node --input-type=module -e "import('@tattoo-ai/core').then(m => { if (typeof m.evaluatePolicy !== 'function') process.exit(1) })"
       - name: Clean git status
-        run: test -z "$(git status --porcelain)"
+        shell: bash
+        run: |
+          status="$(git status --porcelain)"
+          printf '%s\n' "$status"
+          test -z "$status"
