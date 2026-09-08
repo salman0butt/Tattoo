@@ -171,7 +171,7 @@ function validatePolicy(policy: Policy): void {
       ].filter((v) => v !== undefined);
       if (
         values.length === 0 ||
-        values.some((v) => !Number.isSafeInteger(v) || (v) < 0)
+        values.some((v) => !Number.isSafeInteger(v) || v < 0)
       )
         throw new PolicyConfigurationError(
           `${rule.id} requires non-negative integer budgets`,
