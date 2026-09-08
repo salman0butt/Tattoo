@@ -2,7 +2,9 @@
   "name": "tattoo-ai",
   "private": true,
   "packageManager": "pnpm@10.15.1",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "format:check": "prettier --check .",
     "lint": "eslint .",

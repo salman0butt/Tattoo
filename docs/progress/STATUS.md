@@ -34,10 +34,10 @@ CI run 34213417046 failed before install because `actions/setup-node` cache requ
 
 The detailed product roadmap is `docs/roadmap.md`. This ledger is operational state, not permission to advance scope.
 
-| Milestone | Status | Autonomous action |
-| --- | --- | --- |
+| Milestone               | Status      | Autonomous action                         |
+| ----------------------- | ----------- | ----------------------------------------- |
 | M1 — Deterministic Core | IN PROGRESS | Finish verification/review/CI/merge only. |
-| M2+ | DEFERRED | Do not implement during M1-scoped runs. |
+| M2+                     | DEFERRED    | Do not implement during M1-scoped runs.   |
 
 ## Fresh-run recovery order
 

@@ -20,7 +20,16 @@ Core guarantees deterministic evaluation of the normalized input it receives. It
 import { evaluatePolicy } from '@tattoo-ai/core';
 
 const result = evaluatePolicy(
-  { rules: [{ id: 'protect-tests', type: 'path-deny', patterns: ['**/*.test.ts'], operations: ['delete'] }] },
+  {
+    rules: [
+      {
+        id: 'protect-tests',
+        type: 'path-deny',
+        patterns: ['**/*.test.ts'],
+        operations: ['delete'],
+      },
+    ],
+  },
   { files: [{ operation: 'delete', path: 'src/core.test.ts' }] },
 );
 

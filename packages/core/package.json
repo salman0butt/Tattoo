@@ -4,12 +4,28 @@
   "description": "Deterministic policy engine for AI coding-agent constraints",
   "type": "module",
   "license": "MIT",
-  "engines": { "node": ">=22" },
-  "files": ["dist"],
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "dist"
+  ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
-  "scripts": { "build": "tsc -b", "test": "vitest run" },
-  "dependencies": { "picomatch": "^4.0.3" },
-  "devDependencies": { "@types/picomatch": "^4.0.2" }
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "picomatch": "^4.0.3"
+  },
+  "devDependencies": {
+    "@types/picomatch": "^4.0.2"
+  }
 }
