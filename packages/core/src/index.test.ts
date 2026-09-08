@@ -179,7 +179,9 @@ describe('validation and determinism', () => {
     { rules: [{ id: '', type: 'path-deny', patterns: ['a'] }] },
     { rules: [{ id: 'x', type: 'path-deny', patterns: [''] }] },
     { rules: [{ id: 'x', type: 'path-deny' }] },
-    { rules: [{ id: 'x', type: 'path-deny', patterns: ['a'], effect: 'nope' }] },
+    {
+      rules: [{ id: 'x', type: 'path-deny', patterns: ['a'], effect: 'nope' }],
+    },
     {
       rules: [
         {
