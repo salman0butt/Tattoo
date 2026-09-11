@@ -4,13 +4,15 @@ Tattoo is developed in explicit milestones so a fresh autonomous run can recover
 
 ## M1 — Deterministic Core
 
-**Status:** IN PROGRESS
+**Status:** COMPLETE
 
 Build the vendor-independent `@tattoo-ai/core` policy engine and professional open-source repository foundation.
 
 Scope includes the structured TypeScript policy API, path deny and allow-only rules, operation-specific protection, dependency guards, diff budgets, runtime validation, deterministic `allow | warn | block` decisions, path normalization, package-quality build/test/CI, and precise trust-boundary documentation.
 
 M1 is complete only after the implementation is reviewed, exact-head CI is green, the M1 PR is merged, and post-merge `main` CI is green.
+
+Completed in PR #1 and merged to `main` at `3549d240bae98f8d7a0a8192774d585c4ef84319`. Post-merge CI run `34234732518` passed on the resulting `main` commit. Repository About metadata and topics were set after the merge; the project remains public.
 
 ## M2 — Configuration and CLI
 
