@@ -4,12 +4,13 @@ This file is the durable handoff for fresh autonomous runs. GitHub state remains
 
 ## Current milestone
 
-**M1 — Deterministic Core: IN PROGRESS**
+**M1 — Deterministic Core: COMPLETE**
 
-Current branch: `feat/bootstrap-core`
-Current PR: #1
-Last verified implementation head: `f911594527f3e05c386fb3949c8ce4d4ea299c40`
-Last verified CI run: `34233759403` — Node 22 and Node 24 both green, including frozen install, `pnpm check`, and packed-package consumer import.
+Current branch: `main`
+Current PR: #1 — merged
+Last verified implementation head: `3549d240bae98f8d7a0a8192774d585c4ef84319`
+Last verified post-merge CI run: `34234732518` — Node 22 and Node 24 both green, including frozen install, `pnpm check`, packed-package consumer import, and clean git status.
+Repository metadata: public; description and requested topics set on GitHub.
 
 ### M1 completion checklist
 
@@ -25,9 +26,9 @@ Last verified CI run: `34233759403` — Node 22 and Node 24 both green, includin
 - [x] Install/format/lint/typecheck/tests/build observed green on the verified implementation head
 - [x] Packed-package public import observed green on the verified implementation head
 - [x] Skeptical full-diff review completed; two Important findings were fixed and no Critical findings were found
-- [ ] Final exact PR-head GitHub Actions green after durable status/roadmap update
-- [ ] PR merged to `main`
-- [ ] Post-merge `main` CI green and final SHA recorded
+- [x] Final exact PR-head GitHub Actions green
+- [x] PR merged to `main`
+- [x] Post-merge `main` CI green and final SHA recorded
 
 ### Review findings resolved
 
@@ -36,13 +37,13 @@ Last verified CI run: `34233759403` — Node 22 and Node 24 both green, includin
 
 ### Current next action
 
-Verify CI for the exact final PR head containing this durable status update, re-check the complete PR diff and review threads, merge only if every gate remains green, then verify post-merge `main` CI. Do not begin M2.
+Remain read-only for M1-scoped runs. Begin M2 only when it is explicitly authorized.
 
 ## Milestone ledger
 
 Detailed scopes are defined in `docs/roadmap.md`.
 
-- **M1 — Deterministic Core:** IN PROGRESS — finish final CI, merge, and post-merge verification only.
+- **M1 — Deterministic Core:** COMPLETE — merged and verified; do not add M2 work here.
 - **M2 — Configuration and CLI:** NOT STARTED — do not implement during M1-scoped runs.
 - **M3 — Enforcement Adapters:** NOT STARTED — do not implement during M1-scoped runs.
 - **M4 — MCP and Workflow Integrations:** NOT STARTED — do not implement during M1-scoped runs.

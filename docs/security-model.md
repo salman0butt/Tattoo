@@ -8,6 +8,6 @@ Core trusts the normalized facts supplied by its caller. It deterministically va
 
 Adapters must later establish repository roots, collect complete before/after dependency state and diff metrics, normalize tool-specific operations, and enforce returned decisions before dangerous actions where the platform permits.
 
-Path normalization rejects attempts to traverse above the logical repository root and normalizes common separator forms. This reduces ambiguity inside core but is not a filesystem containment guarantee: symlinks, mount points, case sensitivity, Unicode filesystem behavior and TOCTOU concerns live outside M1's trust boundary.
+Path normalization rejects absolute paths and attempts to traverse above the logical repository root, and normalizes common separator forms. This reduces ambiguity inside core but is not a filesystem containment guarantee: symlinks, mount points, case sensitivity, Unicode filesystem behavior and TOCTOU concerns live outside M1's trust boundary.
 
 Report vulnerabilities according to SECURITY.md. Do not include secrets in reports or tests.

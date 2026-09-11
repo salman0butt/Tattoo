@@ -23,6 +23,17 @@ describe('path normalization and rules', () => {
       PolicyConfigurationError,
     );
   });
+  it('rejects absolute and drive-qualified paths', () => {
+    expect(() => normalizeRepositoryPath('/src/index.ts')).toThrow(
+      PolicyConfigurationError,
+    );
+    expect(() => normalizeRepositoryPath('\\src\\index.ts')).toThrow(
+      PolicyConfigurationError,
+    );
+    expect(() => normalizeRepositoryPath('C:\\src\\index.ts')).toThrow(
+      PolicyConfigurationError,
+    );
+  });
   it('denies matching add, modify, delete and both sides of rename', () => {
     const policy: Policy = {
       rules: [{ id: 'secrets', type: 'path-deny', patterns: ['secret/**'] }],
@@ -192,7 +203,18 @@ describe('validation and determinism', () => {
         },
       ],
     },
+    {
+      rules: [
+        {
+          id: 'x',
+          type: 'path-deny',
+          patterns: ['a'],
+          operations: 'delete',
+        },
+      ],
+    },
     { rules: [{ id: 'x', type: 'dependency-guard', forbid: ['changed'] }] },
+    { rules: [{ id: 'x', type: 'dependency-guard', forbid: 'removed' }] },
     { rules: [{ id: 'x', type: 'diff-budget', maxChangedFiles: -1 }] },
   ])('rejects invalid policy %#', (policy) =>
     expect(() => evaluatePolicy(policy as Policy, files())).toThrow(
@@ -229,5 +251,17 @@ describe('validation and determinism', () => {
     expect(JSON.stringify(input)).toBe(snapshot);
     expect(first).toEqual(evaluatePolicy(policy, input));
     expect(first.violations.map((v) => v.ruleId)).toEqual(['a', 'z']);
+  });
+  it('orders rule IDs by code point rather than locale', () => {
+    const result = evaluatePolicy(
+      {
+        rules: [
+          { id: 'a', type: 'path-deny', patterns: ['**'] },
+          { id: 'B', type: 'path-deny', patterns: ['**'] },
+        ],
+      },
+      files({ operation: 'modify', path: 'src/a.ts' }),
+    );
+    expect(result.violations.map((v) => v.ruleId)).toEqual(['B', 'a']);
   });
 });

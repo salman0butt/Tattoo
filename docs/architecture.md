@@ -4,6 +4,31 @@ Tattoo separates observation from policy. Future adapters observe agent/tool act
 
 M1 core is deliberately pure with respect to external systems: no file or config loading, Git inspection, shell/process execution, network access, LLM calls, hooks, telemetry, or vendor SDKs.
 
+```text
+                   .tattoo policy
+                         |
+                         v
+                 Configuration layer
+                    (future package)
+                         |
+                         v
+                  @tattoo-ai/core
+                deterministic engine
+                         |
+              +----------+----------+
+              |                     |
+          decision              violations
+              |                     |
+              +----------+----------+
+                         |
+                  Future adapters
+        +--------+--------+--------+--------+
+        v        v        v        v        v
+      Claude   Codex   Cursor   Gemini  OpenCode
+```
+
+Only the deterministic engine and its structured inputs/outputs exist in M1. The configuration layer and adapters in the diagram are planned components.
+
 ## Rule model
 
 - `path-deny`: violation when an applicable path matches any glob.
@@ -16,4 +41,4 @@ Violations sort by rule ID, resource and reason. Any block violation yields `blo
 
 ## Paths
 
-Core converts backslashes to `/`, removes `.` and repeated separators, resolves internal `..`, and rejects traversal above the repository root. Paths are repository-relative logical paths; adapters are responsible for establishing that relationship from real filesystem observations.
+Core converts backslashes to `/`, removes `.` and repeated separators, resolves internal `..`, and rejects absolute paths or traversal above the repository root. Paths are repository-relative logical paths; adapters are responsible for establishing that relationship from real filesystem observations.
