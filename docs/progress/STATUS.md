@@ -7,9 +7,9 @@ This file is the durable handoff for fresh autonomous runs. GitHub state remains
 **M3 — Claude Code enforcement adapter: IN PROGRESS**
 
 Current branch: `feat/m3-claude-hook`
-Current PR: none
+Current PR: [#10](https://github.com/salman0butt/Tattoo/pull/10), head `ff43dcd`
 M1 and M2 are merged and verified. The latest verified `main` commit is `afbc64991adee12b671471df079f017ccfc3f27c`, with post-merge CI run `34630825453` green on Node 22 and Node 24.
-M3 scope: one Claude Code `PreToolUse` adapter for `Write` and `Edit` file calls. It maps absolute paths to repository-relative core changes and does not inspect Bash/Git changes.
+M3 implementation is complete pending PR #10 merge. Its scope is one Claude Code `PreToolUse` adapter for `Write` and `Edit` file calls. It maps absolute paths to repository-relative core changes and does not inspect Bash/Git changes.
 
 ### M1 completion checklist
 
@@ -39,7 +39,7 @@ M3 scope: one Claude Code `PreToolUse` adapter for `Write` and `Edit` file calls
 
 ### Current next action
 
-Implement the tested Claude Code `PreToolUse` adapter, then record exact-head PR and post-merge CI evidence.
+Merge PR #10 after exact-head CI and review, then record post-merge `main` CI evidence and mark M3 complete.
 
 ## Milestone ledger
 
@@ -47,7 +47,7 @@ Detailed scopes are defined in `docs/roadmap.md`.
 
 - **M1 — Deterministic Core:** COMPLETE — merged and verified; do not add M2 work here.
 - **M2 — Configuration and CLI:** COMPLETE — JSON config/change-set loading and local CLI merged and verified.
-- **M3 — Enforcement Adapters:** IN PROGRESS — first Claude Code `Write`/`Edit` adapter.
+- **M3 — Enforcement Adapters:** IN PROGRESS — first Claude Code `Write`/`Edit` adapter is implemented in PR #10 and is awaiting merge/post-merge verification.
 - **M4 — MCP and Workflow Integrations:** NOT STARTED — do not implement until explicitly authorized.
 - **M5 — Natural-Language Rule Authoring:** NOT STARTED — do not implement until explicitly authorized.
 - **M6 — Benchmarks, Hardening, and First Release:** NOT STARTED — do not implement until explicitly authorized.
