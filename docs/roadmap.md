@@ -32,11 +32,13 @@ Implemented in PR #10 and merged to `main` at `93c508307fcda4d0c4ee770fb2944adca
 
 ## M4 — MCP and Workflow Integrations
 
-**Status:** IN PROGRESS
+**Status:** COMPLETE
 
 Expose deterministic Tattoo capabilities through MCP and broader developer workflows where that improves interoperability. This milestone should compose existing core/config/adapter behavior rather than duplicate policy logic.
 
 The first slice is one local stdio MCP server exposing normalized change-set evaluation through the existing configuration and core packages. It does not observe repositories, enforce agent actions, or add natural-language rule authoring.
+
+Implemented in PR #11 and merged to `main` at `6d812960281d3c5dbc6cdb83c4ba81055eb2df5e`. Post-merge CI run `34637631156` passed on Node 22 and Node 24, including packed-package imports and the installed `tattoo-mcp` stdio handshake smoke test.
 
 ## M5 — Natural-Language Rule Authoring
 

@@ -4,13 +4,13 @@ This file is the durable handoff for fresh autonomous runs. GitHub state remains
 
 ## Current milestone
 
-**M4 — MCP and workflow integrations: IN PROGRESS**
+**M4 — MCP and workflow integrations: COMPLETE**
 
-Current branch: `feat/m4-mcp-workflow`
-Current PR: [#11](https://github.com/salman0butt/Tattoo/pull/11), head `04b4339`
-M1, M2, and M3 are merged and verified. The latest verified `main` commit is `a7b710532b08719d46f94e8e9a221bce4d261a79`, with post-merge CI run `34634867020` green on Node 22 and Node 24.
+Current branch: `main`
+Current PR: none
+M1, M2, M3, and M4 are merged and verified. The latest verified `main` commit is `6d812960281d3c5dbc6cdb83c4ba81055eb2df5e`, with post-merge CI run `34637631156` green on Node 22 and Node 24.
 M3 delivered PR [#10](https://github.com/salman0butt/Tattoo/pull/10): one Claude Code `PreToolUse` adapter for `Write` and `Edit` file calls. It maps absolute paths to repository-relative core changes and does not inspect Bash/Git changes.
-M4 implementation is complete pending PR #11 merge. Its first slice is one local stdio MCP server that exposes existing policy evaluation without duplicating core logic or claiming agent enforcement.
+M4 delivered PR [#11](https://github.com/salman0butt/Tattoo/pull/11): one local stdio MCP server with a read-only `tattoo_check` tool. It exposes existing policy evaluation without duplicating core logic or claiming agent enforcement.
 
 ### M1 completion checklist
 
@@ -40,7 +40,7 @@ M4 implementation is complete pending PR #11 merge. Its first slice is one local
 
 ### Current next action
 
-Merge PR #11 after exact-head CI and review, then record post-merge `main` CI evidence and mark M4 complete.
+M5 remains not started and requires an explicit milestone advance before implementation.
 
 ## Milestone ledger
 
@@ -49,7 +49,7 @@ Detailed scopes are defined in `docs/roadmap.md`.
 - **M1 — Deterministic Core:** COMPLETE — merged and verified; do not add M2 work here.
 - **M2 — Configuration and CLI:** COMPLETE — JSON config/change-set loading and local CLI merged and verified.
 - **M3 — Enforcement Adapters:** COMPLETE — first Claude Code `Write`/`Edit` adapter merged and verified in PR #10.
-- **M4 — MCP and Workflow Integrations:** IN PROGRESS — first local stdio MCP server is implemented in PR #11 and awaits merge/post-merge verification.
+- **M4 — MCP and Workflow Integrations:** COMPLETE — first local stdio MCP server merged and verified in PR #11.
 - **M5 — Natural-Language Rule Authoring:** NOT STARTED — do not implement until explicitly authorized.
 - **M6 — Benchmarks, Hardening, and First Release:** NOT STARTED — do not implement until explicitly authorized.
 
