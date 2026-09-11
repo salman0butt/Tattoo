@@ -24,9 +24,11 @@ Implemented in PR #8 and merged to `main` at `4d60a1768423afcb9a179f4fdfeb03ad06
 
 ## M3 — Enforcement Adapters
 
-**Status:** IN PROGRESS
+**Status:** COMPLETE
 
 Integrate Tattoo with coding-agent enforcement surfaces while keeping adapters separate from core. The first slice is a Claude Code `PreToolUse` adapter for `Write` and `Edit`, with exact observation coverage, blocking behavior, and bypasses documented. Bash/Git observation, deletes, renames, and other vendor adapters remain deferred; unsupported enforcement must never be presented as guaranteed.
+
+Implemented in PR #10 and merged to `main` at `93c508307fcda4d0c4ee770fb2944adcaabb647c`. Post-merge CI run `34634728070` passed on Node 22 and Node 24, including packed-package imports and the installed `tattoo-claude-hook` executable smoke test.
 
 ## M4 — MCP and Workflow Integrations
 
