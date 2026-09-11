@@ -2,7 +2,7 @@
 
 Tattoo separates observation from policy. Future adapters observe agent/tool activity and construct normalized `ChangeSet` objects. `@tattoo-ai/config` loads and validates JSON policy and change-set files, while `@tattoo-ai/core` evaluates rules synchronously and returns stable structured violations and a final decision.
 
-M1 core remains deliberately pure with respect to external systems: no file or config loading, Git inspection, shell/process execution, network access, LLM calls, hooks, telemetry, or vendor SDKs. M2 file access is confined to the configuration and CLI packages.
+M1 core remains deliberately pure with respect to external systems: no file or config loading, Git inspection, shell/process execution, network access, LLM calls, hooks, telemetry, or vendor SDKs. M2 file access is confined to the configuration and CLI packages. M3 adds a narrow Claude Code adapter outside core.
 
 ```text
                    .tattoo policy
@@ -21,16 +21,17 @@ M1 core remains deliberately pure with respect to external systems: no file or c
               |                     |
               +----------+----------+
                          |
-                   @tattoo-ai/cli
-                local output + exit code
-                         |
-                  Future adapters
-        +--------+--------+--------+--------+
-        v        v        v        v        v
-      Claude   Codex   Cursor   Gemini  OpenCode
+              +----------+-----------+
+              |                      |
+       @tattoo-ai/cli        @tattoo-ai/claude-code
+    local output + exit code    PreToolUse adapter
+                                      |
+                                 Claude Code
+
+  Future adapters remain separate: Codex, Cursor, Gemini CLI, OpenCode
 ```
 
-M2 implements the JSON configuration layer and local CLI. The CLI still requires a caller-supplied normalized change set; repository and Git observation remain future adapter responsibilities.
+M2 implements the JSON configuration layer and local CLI. M3 adds a Claude Code adapter that reads `PreToolUse` JSON, observes `Write` and `Edit` file targets, and translates core decisions into Claude Code hook responses. Repository and Git observation outside those tool calls remain future adapter responsibilities.
 
 ## Rule model
 
