@@ -19,11 +19,13 @@ Milestone 1 ships `@tattoo-ai/core`, a pure TypeScript policy engine with:
 
 Milestone 2 adds `@tattoo-ai/config` for validated JSON policy and change-set files, plus `@tattoo-ai/cli` with local `init`, `check`, and `explain` commands.
 
+Milestone 3 adds `@tattoo-ai/claude-code`, a fail-closed Claude Code `PreToolUse` adapter for `Write` and `Edit` file calls.
+
 The core has no LLM, network, filesystem, process, Git, shell, hook, or agent-vendor dependency.
 
 ## Status
 
-Milestone 2 provides deterministic JSON loading and a CLI for evaluating caller-supplied normalized change sets. Repository/Git observation, hooks and agent adapters are planned—not implemented.
+Milestone 3 is the first enforcement adapter. It observes the absolute target path in Claude Code `Write` and `Edit` calls, maps it to a repository-relative `add` or `modify` change, and returns Claude Code's blocking or confirmation response when core finds a violation. Unsupported tools are allowed silently because this adapter does not observe them.
 
 ## Conceptual flow
 
@@ -109,9 +111,39 @@ node packages/cli/dist/index.js explain --policy .tattoo/policy.json --changes c
 
 `init` creates `.tattoo/policy.json` and never overwrites it without `--force`. `check` prints a concise decision; `explain` includes violation metadata. `--json` emits machine-readable evaluation output. Exit codes are `0` for `allow`/`warn`, `1` for `block`, and `2` for usage or configuration/input errors.
 
+### Claude Code hook
+
+Build the adapter and register it as a `PreToolUse` command hook:
+
+```bash
+pnpm --filter @tattoo-ai/claude-code build
+```
+
+In Claude Code project settings, use the repository checkout's executable:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/packages/claude-code/dist/index.js\""
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+The adapter reads `${CLAUDE_PROJECT_DIR}/.tattoo/policy.json` by default. Use `--root <path>` and `--policy <path>` to override the repository root or policy path. `Write` targets are classified as `add` when they do not exist and `modify` when they do; `Edit` targets are `modify`. A `block` becomes Claude's `deny` decision, a `warn` becomes `ask`, and an `allow` emits no response. Malformed input, invalid policy, outside-root paths, and unreadable file state fail closed with exit code `2` and stderr output.
+
 ## Architecture and security
 
-Core receives normalized observations and decides only from those observations. `@tattoo-ai/config` reads and validates JSON outside core, while the CLI handles files, arguments and output. Future observation adapters remain separate; planned integrations include Claude Code, Codex, Cursor, Gemini CLI, and OpenCode.
+Core receives normalized observations and decides only from those observations. `@tattoo-ai/config` reads and validates JSON outside core, while the CLI handles files, arguments and output. The Claude Code adapter handles only `PreToolUse` `Write` and `Edit`; Bash/Git changes, deletes, renames, dependency observation, and other vendors remain outside this milestone.
 
 Tattoo guarantees deterministic evaluation of the input it receives. It does not sandbox an agent, observe changes by itself, or prevent a broken or bypassed adapter from omitting or falsifying facts. See the [architecture](docs/architecture.md) and [security model](docs/security-model.md).
 

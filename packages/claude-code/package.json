@@ -1,0 +1,32 @@
+{
+  "name": "@tattoo-ai/claude-code",
+  "version": "0.1.0",
+  "description": "Claude Code enforcement adapter for Tattoo",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "dist"
+  ],
+  "bin": {
+    "tattoo-claude-hook": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tattoo-ai/config": "workspace:*",
+    "@tattoo-ai/core": "workspace:*"
+  }
+}
