@@ -12,7 +12,7 @@ Scope includes the structured TypeScript policy API, path deny and allow-only ru
 
 M1 is complete only after the implementation is reviewed, exact-head CI is green, the M1 PR is merged, and post-merge `main` CI is green.
 
-Completed in PR #1 and merged to `main` at `3549d240bae98f8d7a0a8192774d585c4ef84319`. Post-merge CI run `34234732518` passed on the resulting `main` commit. Repository About metadata and topics were set after the merge; the project remains public.
+Implemented in PR #1, hardened and documented in follow-up PR #6, and merged to `main` at `af4b7c38182b1fd998918791ad3c07669f803ba4`. Post-merge CI run `34626301398` passed on the resulting `main` commit. Repository About metadata and topics were set after the merge; the project remains public.
 
 ## M2 — Configuration and CLI
 
