@@ -1,6 +1,6 @@
 # Roadmap
 
-Tattoo is developed in explicit milestones so a fresh autonomous run can recover what is complete, what is current, and what remains. This roadmap defines product sequencing; it does not authorize an M1-scoped run to implement later milestones.
+Tattoo is developed in explicit milestones so a fresh autonomous run can recover what is complete, what is current, and what remains. This roadmap defines product sequencing; it does not authorize a run to implement later milestones without an explicit milestone advance.
 
 ## M1 — Deterministic Core
 
@@ -16,9 +16,11 @@ Implemented in PR #1, hardened and documented in follow-up PR #6, and merged to 
 
 ## M2 — Configuration and CLI
 
-**Status:** IN PROGRESS
+**Status:** COMPLETE
 
 Add deterministic JSON configuration loading and a local CLI around the core engine. This milestone owns `.tattoo/policy.json` and normalized change-set JSON parsing/validation, `init`, `check`, and `explain` workflows, useful exit codes, and human/machine-readable output. YAML/TOML, repository observation, hooks, and vendor-specific enforcement remain deferred. It must keep policy evaluation deterministic and must not move vendor-specific enforcement into core.
+
+Implemented in PR #8 and merged to `main` at `4d60a1768423afcb9a179f4fdfeb03ad067b3660`. Post-merge CI run `34630578887` passed on Node 22 and Node 24, including all three packed public package imports.
 
 ## M3 — Enforcement Adapters
 
