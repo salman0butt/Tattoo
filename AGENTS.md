@@ -25,6 +25,6 @@ Tattoo core is a local-first deterministic policy evaluator. Keep `packages/core
 - Avoid speculative abstractions, unrelated cleanup, and unnecessary dependencies.
 - Document security-sensitive decisions and keep validation at trust boundaries.
 
-## Current milestone: M2 — Configuration and CLI (COMPLETE)
+## Current milestone: M3 — Claude Code enforcement adapter
 
-M2 delivered deterministic JSON configuration loading and a local CLI around the core engine. Keep `packages/core` free of filesystem, process, Git, shell, config-file and agent-vendor access. YAML/TOML, repository observation, hooks, adapters, MCP, NL rule compilation, cloud features, publication and releases remain deferred until explicitly authorized.
+M3 implements one Claude Code `PreToolUse` adapter for `Write` and `Edit` calls. Keep `packages/core` and `packages/config` vendor-independent; the adapter may read stdin, the policy file, and target-file metadata. Bash/Git observation, deletes, renames, other vendors, MCP, NL rule compilation, cloud features, publication and releases remain deferred.

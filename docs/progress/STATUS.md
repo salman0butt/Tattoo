@@ -4,12 +4,12 @@ This file is the durable handoff for fresh autonomous runs. GitHub state remains
 
 ## Current milestone
 
-**M2 — Configuration and CLI: COMPLETE**
+**M3 — Claude Code enforcement adapter: IN PROGRESS**
 
-Current branch: `main`
-Current PR: #8 — merged
-M1 implementation and dependency maintenance are merged. M2 is merged at `4d60a1768423afcb9a179f4fdfeb03ad067b3660`; post-merge CI run `34630578887` is green on Node 22 and Node 24, including frozen install, `pnpm check`, all three packed public package imports, and clean git status.
-M2 delivered deterministic JSON policy/change-set loading plus local `init`, `check`, and `explain` commands. No repository observation or agent adapter is in scope.
+Current branch: `feat/m3-claude-hook`
+Current PR: none
+M1 and M2 are merged and verified. The latest verified `main` commit is `afbc64991adee12b671471df079f017ccfc3f27c`, with post-merge CI run `34630825453` green on Node 22 and Node 24.
+M3 scope: one Claude Code `PreToolUse` adapter for `Write` and `Edit` file calls. It maps absolute paths to repository-relative core changes and does not inspect Bash/Git changes.
 
 ### M1 completion checklist
 
@@ -39,7 +39,7 @@ M2 delivered deterministic JSON policy/change-set loading plus local `init`, `ch
 
 ### Current next action
 
-Keep M3 enforcement adapters deferred until explicitly authorized.
+Implement the tested Claude Code `PreToolUse` adapter, then record exact-head PR and post-merge CI evidence.
 
 ## Milestone ledger
 
@@ -47,7 +47,7 @@ Detailed scopes are defined in `docs/roadmap.md`.
 
 - **M1 — Deterministic Core:** COMPLETE — merged and verified; do not add M2 work here.
 - **M2 — Configuration and CLI:** COMPLETE — JSON config/change-set loading and local CLI merged and verified.
-- **M3 — Enforcement Adapters:** NOT STARTED — do not implement until explicitly authorized.
+- **M3 — Enforcement Adapters:** IN PROGRESS — first Claude Code `Write`/`Edit` adapter.
 - **M4 — MCP and Workflow Integrations:** NOT STARTED — do not implement until explicitly authorized.
 - **M5 — Natural-Language Rule Authoring:** NOT STARTED — do not implement until explicitly authorized.
 - **M6 — Benchmarks, Hardening, and First Release:** NOT STARTED — do not implement until explicitly authorized.
