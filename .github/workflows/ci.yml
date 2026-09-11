@@ -34,16 +34,22 @@ jobs:
           (cd packages/config && pnpm pack --pack-destination "$consumer")
           (cd packages/cli && pnpm pack --pack-destination "$consumer")
           (cd packages/claude-code && pnpm pack --pack-destination "$consumer")
+          (cd packages/mcp && pnpm pack --pack-destination "$consumer")
           cd "$consumer"
           npm init -y >/dev/null
           npm install --ignore-scripts ./*.tgz
-          node --input-type=module -e "Promise.all([import('@tattoo-ai/core'), import('@tattoo-ai/config'), import('@tattoo-ai/cli'), import('@tattoo-ai/claude-code')]).then(([core, config, cli, adapter]) => { if (typeof core.evaluatePolicy !== 'function' || config.DEFAULT_POLICY_PATH !== '.tattoo/policy.json' || typeof cli.runCli !== 'function' || typeof adapter.evaluatePreToolUse !== 'function') process.exit(1) })"
+          node --input-type=module -e "Promise.all([import('@tattoo-ai/core'), import('@tattoo-ai/config'), import('@tattoo-ai/cli'), import('@tattoo-ai/claude-code'), import('@tattoo-ai/mcp')]).then(([core, config, cli, adapter, mcp]) => { if (typeof core.evaluatePolicy !== 'function' || config.DEFAULT_POLICY_PATH !== '.tattoo/policy.json' || typeof cli.runCli !== 'function' || typeof adapter.evaluatePreToolUse !== 'function' || typeof mcp.createMcpServer !== 'function') process.exit(1) })"
           hook_root="$consumer/hook-project"
           mkdir -p "$hook_root/.tattoo"
           printf '%s\n' '{"rules":[{"id":"protect-src","type":"path-deny","patterns":["src/**"]}]}' > "$hook_root/.tattoo/policy.json"
           printf '%s\n' '{"hook_event_name":"PreToolUse","tool_name":"Edit","tool_input":{"file_path":"'"$hook_root"'/src/index.ts"}}' > "$consumer/hook-input.json"
           node_modules/.bin/tattoo-claude-hook --root "$hook_root" < "$consumer/hook-input.json" > "$consumer/hook-output.json"
           node --input-type=module -e "import { readFileSync } from 'node:fs'; const output = JSON.parse(readFileSync('$consumer/hook-output.json', 'utf8')); if (output.hookSpecificOutput?.permissionDecision !== 'deny') process.exit(1)"
+          mcp_root="$consumer/mcp-project"
+          mkdir -p "$mcp_root/.tattoo"
+          printf '%s\n' '{"rules":[]}' > "$mcp_root/.tattoo/policy.json"
+          printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"tattoo-ci","version":"1.0.0"}}}' '{"jsonrpc":"2.0","method":"notifications/initialized","params":{}}' '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' | node_modules/.bin/tattoo-mcp --root "$mcp_root" > "$consumer/mcp-output.jsonl" 2> "$consumer/mcp-error.log"
+          node --input-type=module -e "import { readFileSync } from 'node:fs'; const lines = readFileSync('$consumer/mcp-output.jsonl', 'utf8').trim().split('\\n').map(JSON.parse); if (lines[0]?.id !== 1 || lines[1]?.id !== 2 || lines[1]?.result?.tools?.[0]?.name !== 'tattoo_check') process.exit(1)"
       - name: Clean git status
         shell: bash
         run: |

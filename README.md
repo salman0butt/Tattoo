@@ -21,11 +21,13 @@ Milestone 2 adds `@tattoo-ai/config` for validated JSON policy and change-set fi
 
 Milestone 3 adds `@tattoo-ai/claude-code`, a fail-closed Claude Code `PreToolUse` adapter for `Write` and `Edit` file calls.
 
+Milestone 4 adds `@tattoo-ai/mcp`, a local stdio MCP server with one read-only `tattoo_check` workflow tool.
+
 The core has no LLM, network, filesystem, process, Git, shell, hook, or agent-vendor dependency.
 
 ## Status
 
-Milestone 3 is the first enforcement adapter. It observes the absolute target path in Claude Code `Write` and `Edit` calls, maps it to a repository-relative `add` or `modify` change, and returns Claude Code's blocking or confirmation response when core finds a violation. Unsupported tools are allowed silently because this adapter does not observe them.
+Milestone 4 is the current workflow integration. Its `tattoo_check` tool accepts a normalized change set, loads the configured policy, and returns the deterministic core result as JSON text. It does not observe or block agent actions. M3 remains the only enforcement adapter; it observes the absolute target path in Claude Code `Write` and `Edit` calls and maps it to a repository-relative `add` or `modify` change.
 
 ## Conceptual flow
 
@@ -141,6 +143,34 @@ In Claude Code project settings, use the repository checkout's executable:
 
 The adapter reads `${CLAUDE_PROJECT_DIR}/.tattoo/policy.json` by default. Use `--root <path>` and `--policy <path>` to override the repository root or policy path. `Write` targets are classified as `add` when they do not exist and `modify` when they do; `Edit` targets are `modify`. A `block` becomes Claude's `deny` decision, a `warn` becomes `ask`, and an `allow` emits no response. Malformed input, invalid policy, outside-root paths, and unreadable file state fail closed with exit code `2` and stderr output.
 
+### MCP workflow server
+
+Build and run the local stdio server:
+
+```bash
+pnpm --filter @tattoo-ai/mcp build
+node packages/mcp/dist/index.js --root "$PWD"
+```
+
+Register the command in an MCP host that supports stdio servers:
+
+```json
+{
+  "mcpServers": {
+    "tattoo": {
+      "command": "node",
+      "args": [
+        "/absolute/path/to/Tattoo/packages/mcp/dist/index.js",
+        "--root",
+        "/absolute/path/to/repository"
+      ]
+    }
+  }
+}
+```
+
+The server loads `/absolute/path/to/repository/.tattoo/policy.json` by default; `--policy <path>` overrides it. Call `tattoo_check` with a normalized change set such as `{ "changes": { "files": [{ "operation": "modify", "path": "src/index.ts" }] } }`. The tool returns the existing `allow`, `warn`, or `block` result as JSON text. This is a workflow check over caller-supplied facts, not repository observation or agent enforcement. Stdio protocol output stays on stdout; diagnostics go to stderr.
+
 ## Architecture and security
 
 Core receives normalized observations and decides only from those observations. `@tattoo-ai/config` reads and validates JSON outside core, while the CLI handles files, arguments and output. The Claude Code adapter handles only `PreToolUse` `Write` and `Edit`; Bash/Git changes, deletes, renames, dependency observation, and other vendors remain outside this milestone.
@@ -149,7 +179,7 @@ Tattoo guarantees deterministic evaluation of the input it receives. It does not
 
 ## Roadmap
 
-Configuration loading and a local CLI are implemented in M2. The first Claude Code enforcement adapter is implemented in M3; additional adapters, MCP/workflow integrations, optional natural-language rule authoring, and empirical benchmarks remain planned. See the [roadmap](docs/roadmap.md).
+Configuration loading and a local CLI are implemented in M2. The first Claude Code enforcement adapter is implemented in M3, and the first local MCP workflow tool is implemented in M4. Additional adapters, MCP capabilities, optional natural-language rule authoring, and empirical benchmarks remain planned. See the [roadmap](docs/roadmap.md).
 
 ## Development
 

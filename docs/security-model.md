@@ -1,6 +1,6 @@
 # Security model
 
-Tattoo M3 is a deterministic local decision workflow with one narrow Claude Code enforcement adapter, not a sandbox or reference monitor.
+Tattoo M4 is a deterministic local decision workflow with one narrow Claude Code enforcement adapter and one MCP workflow server, not a sandbox or reference monitor.
 
 ## Trust boundary
 
@@ -9,6 +9,8 @@ Core trusts the normalized facts supplied by its caller. The M2 configuration la
 The M2 CLI does not observe Git or filesystem changes. The M3 Claude Code adapter observes only `PreToolUse` `Write` and `Edit` calls, establishes a repository root, classifies file operations, and returns Claude Code's enforcement response. Bash/Git changes, deletes, renames, dependency changes, and bypasses outside these hook calls remain unobserved.
 
 The adapter fails closed on malformed hook input, invalid policy, unreadable policy or file state, and paths outside the configured root. It emits decisions only for supported file tools: `block` maps to `deny`, `warn` maps to `ask`, and `allow` emits no hook response. This protects the hook boundary from silently treating an observation or configuration error as permission.
+
+The M4 MCP server is read-only. It loads the configured policy and validates caller-supplied normalized change sets before returning the core result. Invalid changes or policy are returned as MCP tool errors; the server does not inspect repositories, mutate files, or enforce agent actions. MCP stdio output is a protocol channel, so diagnostics are kept on stderr.
 
 Path normalization rejects absolute paths and attempts to traverse above the logical repository root, and normalizes common separator forms. This reduces ambiguity inside core but is not a filesystem containment guarantee: symlinks, mount points, case sensitivity, Unicode filesystem behavior and TOCTOU concerns live outside core's trust boundary.
 
