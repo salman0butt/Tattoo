@@ -31,10 +31,12 @@ jobs:
           consumer="$RUNNER_TEMP/tattoo-consumer"
           mkdir -p "$consumer"
           (cd packages/core && pnpm pack --pack-destination "$consumer")
+          (cd packages/config && pnpm pack --pack-destination "$consumer")
+          (cd packages/cli && pnpm pack --pack-destination "$consumer")
           cd "$consumer"
           npm init -y >/dev/null
           npm install --ignore-scripts ./*.tgz
-          node --input-type=module -e "import('@tattoo-ai/core').then(m => { if (typeof m.evaluatePolicy !== 'function') process.exit(1) })"
+          node --input-type=module -e "Promise.all([import('@tattoo-ai/core'), import('@tattoo-ai/config'), import('@tattoo-ai/cli')]).then(([core, config, cli]) => { if (typeof core.evaluatePolicy !== 'function' || config.DEFAULT_POLICY_PATH !== '.tattoo/policy.json' || typeof cli.runCli !== 'function') process.exit(1) })"
       - name: Clean git status
         shell: bash
         run: |
