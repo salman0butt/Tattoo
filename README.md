@@ -17,11 +17,13 @@ Milestone 1 ships `@tattoo-ai/core`, a pure TypeScript policy engine with:
 - runtime policy and input validation;
 - stable structured violations and `allow | warn | block` decisions.
 
+Milestone 2 adds `@tattoo-ai/config` for validated JSON policy and change-set files, plus `@tattoo-ai/cli` with local `init`, `check`, and `explain` commands.
+
 The core has no LLM, network, filesystem, process, Git, shell, hook, or agent-vendor dependency.
 
 ## Status
 
-Milestone 1 provides path deny and allow-only rules, operation-specific path protection, dependency-change guards, diff budgets, runtime policy validation, deliberate repository-relative path normalization, and deterministic violation ordering. CLI, config-file loading, hooks and agent adapters are planned—not implemented.
+Milestone 2 provides deterministic JSON loading and a CLI for evaluating caller-supplied normalized change sets. Repository/Git observation, hooks and agent adapters are planned—not implemented.
 
 ## Conceptual flow
 
@@ -74,7 +76,7 @@ Rules default to `block`; set `effect: 'warn'` for advisory violations. Any bloc
 
 ### Structured policy example
 
-Core consumes JavaScript/TypeScript objects. Loading YAML, JSON, or TOML files is planned for a future configuration layer.
+Core consumes JavaScript/TypeScript objects. The M2 configuration layer loads the same policy shape from JSON; YAML and TOML remain future formats.
 
 ```ts
 const policy = {
@@ -94,15 +96,28 @@ const policy = {
 };
 ```
 
+### Local CLI
+
+The CLI does not inspect Git or the repository yet. It evaluates a normalized change-set JSON file supplied by a caller:
+
+```bash
+pnpm --filter @tattoo-ai/cli build
+node packages/cli/dist/index.js init
+node packages/cli/dist/index.js check --changes changes.json
+node packages/cli/dist/index.js explain --policy .tattoo/policy.json --changes changes.json --json
+```
+
+`init` creates `.tattoo/policy.json` and never overwrites it without `--force`. `check` prints a concise decision; `explain` includes violation metadata. `--json` emits machine-readable evaluation output. Exit codes are `0` for `allow`/`warn`, `1` for `block`, and `2` for usage or configuration/input errors.
+
 ## Architecture and security
 
-Core receives normalized observations and decides only from those observations. Future configuration and agent adapters will sit outside the package. Planned integrations include Claude Code, Codex, Cursor, Gemini CLI, and OpenCode.
+Core receives normalized observations and decides only from those observations. `@tattoo-ai/config` reads and validates JSON outside core, while the CLI handles files, arguments and output. Future observation adapters remain separate; planned integrations include Claude Code, Codex, Cursor, Gemini CLI, and OpenCode.
 
 Tattoo guarantees deterministic evaluation of the input it receives. It does not sandbox an agent, observe changes by itself, or prevent a broken or bypassed adapter from omitting or falsifying facts. See the [architecture](docs/architecture.md) and [security model](docs/security-model.md).
 
 ## Roadmap
 
-Configuration loading and a CLI are next, followed by enforcement adapters, MCP/workflow integrations, optional natural-language rule authoring, and empirical benchmarks. See the [roadmap](docs/roadmap.md); these features are not implemented in M1.
+Configuration loading and a local CLI are implemented in M2. Enforcement adapters, MCP/workflow integrations, optional natural-language rule authoring, and empirical benchmarks remain planned. See the [roadmap](docs/roadmap.md).
 
 ## Development
 

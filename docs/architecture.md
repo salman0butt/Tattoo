@@ -1,15 +1,15 @@
 # Architecture
 
-Tattoo separates observation from policy. Future adapters observe agent/tool activity and construct normalized `ChangeSet` objects. `@tattoo-ai/core` validates an explicit `Policy`, evaluates rules synchronously, and returns stable structured violations and a final decision.
+Tattoo separates observation from policy. Future adapters observe agent/tool activity and construct normalized `ChangeSet` objects. `@tattoo-ai/config` loads and validates JSON policy and change-set files, while `@tattoo-ai/core` evaluates rules synchronously and returns stable structured violations and a final decision.
 
-M1 core is deliberately pure with respect to external systems: no file or config loading, Git inspection, shell/process execution, network access, LLM calls, hooks, telemetry, or vendor SDKs.
+M1 core remains deliberately pure with respect to external systems: no file or config loading, Git inspection, shell/process execution, network access, LLM calls, hooks, telemetry, or vendor SDKs. M2 file access is confined to the configuration and CLI packages.
 
 ```text
                    .tattoo policy
                          |
                          v
-                 Configuration layer
-                    (future package)
+                @tattoo-ai/config
+                 JSON trust boundary
                          |
                          v
                   @tattoo-ai/core
@@ -21,13 +21,16 @@ M1 core is deliberately pure with respect to external systems: no file or config
               |                     |
               +----------+----------+
                          |
+                   @tattoo-ai/cli
+                local output + exit code
+                         |
                   Future adapters
         +--------+--------+--------+--------+
         v        v        v        v        v
       Claude   Codex   Cursor   Gemini  OpenCode
 ```
 
-Only the deterministic engine and its structured inputs/outputs exist in M1. The configuration layer and adapters in the diagram are planned components.
+M2 implements the JSON configuration layer and local CLI. The CLI still requires a caller-supplied normalized change set; repository and Git observation remain future adapter responsibilities.
 
 ## Rule model
 

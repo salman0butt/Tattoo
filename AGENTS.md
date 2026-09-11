@@ -25,6 +25,6 @@ Tattoo core is a local-first deterministic policy evaluator. Keep `packages/core
 - Avoid speculative abstractions, unrelated cleanup, and unnecessary dependencies.
 - Document security-sensitive decisions and keep validation at trust boundaries.
 
-## M1 scope
+## Current milestone: M2 — Configuration and CLI
 
-Implement only deterministic core and repository foundation. CLI, config loaders, adapters, MCP, NL rule compilation, cloud features, publication and releases are deferred.
+Implement deterministic JSON configuration loading and a local CLI around the core engine. Keep `packages/core` free of filesystem, process, Git, shell, config-file and agent-vendor access. YAML/TOML, repository observation, hooks, adapters, MCP, NL rule compilation, cloud features, publication and releases remain deferred.

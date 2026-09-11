@@ -122,7 +122,7 @@ export function normalizeRepositoryPath(input: string): string {
   return parts.join('/');
 }
 
-function validatePolicy(policy: Policy): void {
+export function validatePolicy(policy: Policy): void {
   if (!policy || !Array.isArray((policy as { rules?: unknown }).rules))
     throw new PolicyConfigurationError('Policy.rules must be an array');
   const rules = policy.rules;
@@ -215,7 +215,7 @@ function validateDependencyMap(value: unknown, label: string): void {
   }
 }
 
-function validateChangeSet(changeSet: ChangeSet): void {
+export function validateChangeSet(changeSet: ChangeSet): void {
   if (!isRecord(changeSet) || !Array.isArray(changeSet.files))
     throw new PolicyConfigurationError('ChangeSet.files must be an array');
 

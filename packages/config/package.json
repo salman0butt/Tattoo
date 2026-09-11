@@ -1,0 +1,28 @@
+{
+  "name": "@tattoo-ai/config",
+  "version": "0.1.0",
+  "description": "JSON configuration loading for Tattoo",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tattoo-ai/core": "workspace:*"
+  }
+}

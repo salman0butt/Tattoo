@@ -16,9 +16,9 @@ Implemented in PR #1, hardened and documented in follow-up PR #6, and merged to 
 
 ## M2 — Configuration and CLI
 
-**Status:** NOT STARTED
+**Status:** IN PROGRESS
 
-Add deterministic configuration loading and a local CLI around the core engine. This milestone owns `.tattoo` configuration parsing/validation, command-line evaluation workflows, useful exit codes, and human/machine-readable output. It must keep policy evaluation deterministic and must not move vendor-specific enforcement into core.
+Add deterministic JSON configuration loading and a local CLI around the core engine. This milestone owns `.tattoo/policy.json` and normalized change-set JSON parsing/validation, `init`, `check`, and `explain` workflows, useful exit codes, and human/machine-readable output. YAML/TOML, repository observation, hooks, and vendor-specific enforcement remain deferred. It must keep policy evaluation deterministic and must not move vendor-specific enforcement into core.
 
 ## M3 — Enforcement Adapters
 
