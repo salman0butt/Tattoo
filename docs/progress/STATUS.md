@@ -4,12 +4,12 @@ This file is the durable handoff for fresh autonomous runs. GitHub state remains
 
 ## Current milestone
 
-**M2 — Configuration and CLI: IN PROGRESS**
+**M2 — Configuration and CLI: COMPLETE**
 
-Current branch: `feat/m2-config-cli`
-Current PR: none
-M1 implementation and dependency maintenance are merged; the latest verified `main` commit is `8e64a6184e1d57d4d84d3dfeb631b065ce70f721`, with post-merge CI run `34628898896` green on Node 22 and Node 24.
-M2 scope: deterministic JSON policy/change-set loading plus local `init`, `check`, and `explain` commands. No repository observation or agent adapter is in scope.
+Current branch: `main`
+Current PR: #8 — merged
+M1 implementation and dependency maintenance are merged. M2 is merged at `4d60a1768423afcb9a179f4fdfeb03ad067b3660`; post-merge CI run `34630578887` is green on Node 22 and Node 24, including frozen install, `pnpm check`, all three packed public package imports, and clean git status.
+M2 delivered deterministic JSON policy/change-set loading plus local `init`, `check`, and `explain` commands. No repository observation or agent adapter is in scope.
 
 ### M1 completion checklist
 
@@ -39,18 +39,18 @@ M2 scope: deterministic JSON policy/change-set loading plus local `init`, `check
 
 ### Current next action
 
-Implement the smallest tested M2 slice, then update this ledger with exact-head PR and post-merge CI evidence.
+Keep M3 enforcement adapters deferred until explicitly authorized.
 
 ## Milestone ledger
 
 Detailed scopes are defined in `docs/roadmap.md`.
 
 - **M1 — Deterministic Core:** COMPLETE — merged and verified; do not add M2 work here.
-- **M2 — Configuration and CLI:** IN PROGRESS — JSON config/change-set loading and local CLI.
-- **M3 — Enforcement Adapters:** NOT STARTED — do not implement during M1-scoped runs.
-- **M4 — MCP and Workflow Integrations:** NOT STARTED — do not implement during M1-scoped runs.
-- **M5 — Natural-Language Rule Authoring:** NOT STARTED — do not implement during M1-scoped runs.
-- **M6 — Benchmarks, Hardening, and First Release:** NOT STARTED — do not implement during M1-scoped runs.
+- **M2 — Configuration and CLI:** COMPLETE — JSON config/change-set loading and local CLI merged and verified.
+- **M3 — Enforcement Adapters:** NOT STARTED — do not implement until explicitly authorized.
+- **M4 — MCP and Workflow Integrations:** NOT STARTED — do not implement until explicitly authorized.
+- **M5 — Natural-Language Rule Authoring:** NOT STARTED — do not implement until explicitly authorized.
+- **M6 — Benchmarks, Hardening, and First Release:** NOT STARTED — do not implement until explicitly authorized.
 
 ## Fresh-run recovery order
 
