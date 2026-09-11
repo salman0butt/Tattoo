@@ -149,7 +149,7 @@ Tattoo guarantees deterministic evaluation of the input it receives. It does not
 
 ## Roadmap
 
-Configuration loading and a local CLI are implemented in M2. Enforcement adapters, MCP/workflow integrations, optional natural-language rule authoring, and empirical benchmarks remain planned. See the [roadmap](docs/roadmap.md).
+Configuration loading and a local CLI are implemented in M2. The first Claude Code enforcement adapter is implemented in M3; additional adapters, MCP/workflow integrations, optional natural-language rule authoring, and empirical benchmarks remain planned. See the [roadmap](docs/roadmap.md).
 
 ## Development
 

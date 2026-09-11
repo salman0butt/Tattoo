@@ -38,6 +38,12 @@ jobs:
           npm init -y >/dev/null
           npm install --ignore-scripts ./*.tgz
           node --input-type=module -e "Promise.all([import('@tattoo-ai/core'), import('@tattoo-ai/config'), import('@tattoo-ai/cli'), import('@tattoo-ai/claude-code')]).then(([core, config, cli, adapter]) => { if (typeof core.evaluatePolicy !== 'function' || config.DEFAULT_POLICY_PATH !== '.tattoo/policy.json' || typeof cli.runCli !== 'function' || typeof adapter.evaluatePreToolUse !== 'function') process.exit(1) })"
+          hook_root="$consumer/hook-project"
+          mkdir -p "$hook_root/.tattoo"
+          printf '%s\n' '{"rules":[{"id":"protect-src","type":"path-deny","patterns":["src/**"]}]}' > "$hook_root/.tattoo/policy.json"
+          printf '%s\n' '{"hook_event_name":"PreToolUse","tool_name":"Edit","tool_input":{"file_path":"'"$hook_root"'/src/index.ts"}}' > "$consumer/hook-input.json"
+          node_modules/.bin/tattoo-claude-hook --root "$hook_root" < "$consumer/hook-input.json" > "$consumer/hook-output.json"
+          node --input-type=module -e "import { readFileSync } from 'node:fs'; const output = JSON.parse(readFileSync('$consumer/hook-output.json', 'utf8')); if (output.hookSpecificOutput?.permissionDecision !== 'deny') process.exit(1)"
       - name: Clean git status
         shell: bash
         run: |

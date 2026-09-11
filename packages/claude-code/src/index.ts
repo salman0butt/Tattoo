@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { lstat } from 'node:fs/promises';
+import { realpathSync } from 'node:fs';
 import { isAbsolute, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -237,10 +238,18 @@ async function main(): Promise<void> {
   process.exitCode = code;
 }
 
-if (
-  process.argv[1] &&
-  import.meta.url === pathToFileURL(resolve(process.argv[1])).href
-)
+function isMainModule(): boolean {
+  if (!process.argv[1]) return false;
+  try {
+    return (
+      import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href
+    );
+  } catch {
+    return false;
+  }
+}
+
+if (isMainModule())
   void main().catch((error: unknown) => {
     process.stderr.write(
       `Tattoo Claude Code adapter error: ${error instanceof Error ? error.message : String(error)}\n`,

@@ -21,13 +21,12 @@ M1 core remains deliberately pure with respect to external systems: no file or c
               |                     |
               +----------+----------+
                          |
-                   @tattoo-ai/cli
-                local output + exit code
-                         |
-                @tattoo-ai/claude-code
-                 PreToolUse adapter
-                         |
-                    Claude Code
+              +----------+-----------+
+              |                      |
+       @tattoo-ai/cli        @tattoo-ai/claude-code
+    local output + exit code    PreToolUse adapter
+                                      |
+                                 Claude Code
 
   Future adapters remain separate: Codex, Cursor, Gemini CLI, OpenCode
 ```
