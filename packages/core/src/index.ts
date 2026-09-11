@@ -100,6 +100,10 @@ export function normalizeRepositoryPath(input: string): string {
     .replaceAll('\\', '/')
     .replace(/^\.\//, '')
     .replace(/\/{2,}/g, '/');
+  if (raw.startsWith('/') || /^[A-Za-z]:/.test(raw))
+    throw new PolicyConfigurationError(
+      `Path must be repository-relative: ${input}`,
+    );
   const parts: string[] = [];
   for (const part of raw.split('/')) {
     if (part === '' || part === '.') continue;
@@ -153,16 +157,27 @@ function validatePolicy(policy: Policy): void {
         throw new PolicyConfigurationError(
           `${rule.id} requires non-empty patterns`,
         );
-      if (rule.operations?.some((op) => !operations.includes(op)))
+      if (
+        rule.operations !== undefined &&
+        (!Array.isArray(rule.operations) ||
+          (rule.operations as readonly unknown[]).some(
+            (op) => !operations.includes(op as FileOperation),
+          ))
+      )
         throw new PolicyConfigurationError(`${rule.id} has invalid operation`);
     }
-    if (
-      rule.type === 'dependency-guard' &&
-      rule.forbid?.some((kind) => !depKinds.includes(kind))
-    )
-      throw new PolicyConfigurationError(
-        `${rule.id} has invalid dependency category`,
-      );
+    if (rule.type === 'dependency-guard') {
+      if (
+        rule.forbid !== undefined &&
+        (!Array.isArray(rule.forbid) ||
+          (rule.forbid as readonly unknown[]).some(
+            (kind) => !depKinds.includes(kind as (typeof depKinds)[number]),
+          ))
+      )
+        throw new PolicyConfigurationError(
+          `${rule.id} has invalid dependency category`,
+        );
+    }
     if (rule.type === 'diff-budget') {
       const values = [
         rule.maxChangedFiles,
@@ -284,6 +299,10 @@ function violation(
     reason,
     metadata,
   };
+}
+
+function compareStrings(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
 }
 
 function filePaths(change: FileChange): string[] {
@@ -418,9 +437,9 @@ export function evaluatePolicy(
   }
   violations.sort(
     (a, b) =>
-      a.ruleId.localeCompare(b.ruleId) ||
-      (a.resource ?? '').localeCompare(b.resource ?? '') ||
-      a.reason.localeCompare(b.reason),
+      compareStrings(a.ruleId, b.ruleId) ||
+      compareStrings(a.resource ?? '', b.resource ?? '') ||
+      compareStrings(a.reason, b.reason),
   );
   const decision: Decision = violations.some((v) => v.effect === 'block')
     ? 'block'
