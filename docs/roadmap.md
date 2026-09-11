@@ -44,6 +44,8 @@ Add optional natural-language assistance for authoring explicit deterministic Ta
 
 Build a reproducible evaluation suite for rule correctness, adapter observation coverage, compatibility, and overhead; harden packaging/documentation; and prepare the first public package release. No benchmark numbers are claimed before a real methodology and measurements exist. Publishing, tagging, and releasing require explicit authorization.
 
+The benchmark plan is to compare the same agent on adversarial tasks with and without Tattoo, such as fixing a typo while avoiding unrelated cleanup, implementing login without installing a package, changing only `src/registration/**`, preserving a public API response, and leaving migrations untouched. Measure explicit constraint violations, unauthorized paths, dependency changes, protected deletions, diff-budget violations, false-positive blocks, and evaluation overhead.
+
 ## Outside the current roadmap
 
 Cloud dashboards, authentication, billing, hosted databases, and telemetry are not required for the local-first product. They should only enter a future milestone if concrete user needs justify the additional trust, privacy, and operational complexity.
