@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 import { realpathSync } from 'node:fs';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
+import { mkdir, rename, unlink, writeFile } from 'node:fs/promises';
 import { dirname, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -171,11 +172,18 @@ async function addRule(args: ParsedArgs, io: CliIo): Promise<number> {
     throw new CliError(`Rule id ${rule.id} already exists`);
 
   const updatedPolicy = { ...policy, rules: [...policy.rules, rule] };
-  await writeFile(
-    args.policyPath,
-    `${JSON.stringify(updatedPolicy, null, 2)}\n`,
-    'utf8',
-  );
+  const temporaryPath = `${args.policyPath}.${randomUUID()}.tmp`;
+  try {
+    await writeFile(
+      temporaryPath,
+      `${JSON.stringify(updatedPolicy, null, 2)}\n`,
+      { encoding: 'utf8', flag: 'wx' },
+    );
+    await rename(temporaryPath, args.policyPath);
+  } catch (error) {
+    await unlink(temporaryPath).catch(() => undefined);
+    throw error;
+  }
   const output = {
     path: displayPath(args.policyPath, args.cwd),
     rule,

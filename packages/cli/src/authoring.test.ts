@@ -55,5 +55,11 @@ describe('natural-language rule authoring', () => {
     expect(() => compileRuleText('never change the public API')).toThrow(
       UnsupportedRuleTextError,
     );
+    expect(() => compileRuleText('constructor')).toThrow(
+      UnsupportedRuleTextError,
+    );
+    expect(() => compileRuleText('__proto__')).toThrow(
+      UnsupportedRuleTextError,
+    );
   });
 });

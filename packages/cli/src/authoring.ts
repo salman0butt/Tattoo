@@ -38,7 +38,7 @@ export function compileRuleText(text: string): Rule {
   if (typeof text !== 'string')
     throw new UnsupportedRuleTextError('Rule text must be a string');
   const normalized = normalizeRuleText(text);
-  const rule = rules[normalized];
+  const rule = Object.hasOwn(rules, normalized) ? rules[normalized] : undefined;
   if (!rule)
     throw new UnsupportedRuleTextError(`Unsupported rule text: ${text}`);
   return rule;
