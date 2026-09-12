@@ -12,7 +12,9 @@
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",
     "build": "tsc -b",
-    "check": "pnpm format:check && pnpm typecheck && pnpm lint && pnpm test && pnpm build"
+    "check": "pnpm format:check && pnpm typecheck && pnpm lint && pnpm test && pnpm build",
+    "benchmark": "pnpm --silent build && node benchmarks/run.mjs",
+    "release:check": "pnpm --silent build && node scripts/release-check.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -2,8 +2,16 @@
   "name": "@tattoo-ai/cli",
   "version": "0.1.0",
   "description": "Command-line interface for Tattoo policy evaluation",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/salman0butt/Tattoo.git",
+    "directory": "packages/cli"
+  },
   "type": "module",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=22"
   },

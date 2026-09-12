@@ -4,11 +4,11 @@ This file is the durable handoff for fresh autonomous runs. GitHub state remains
 
 ## Current milestone
 
-**M5 — Natural-language rule authoring: COMPLETE**
+**M6 — Benchmarks, hardening, and first release: IN PROGRESS**
 
 Current branch: `main`
 Current PR: none
-M1 through M5 are merged and verified. The latest verified `main` commit is `499b0bcf8a76371dd6e626e8742db81be9e27407`, with post-merge CI run `34689034368` green on Node 22 and Node 24.
+M1 through M5 are merged and verified. The latest verified `main` commit is `0834bcab201e2400c158e2ad1a7e8a71ab983aba`, with post-merge CI run `34689097018` green on Node 22 and Node 24.
 M3 delivered PR [#10](https://github.com/salman0butt/Tattoo/pull/10): one Claude Code `PreToolUse` adapter for `Write` and `Edit` file calls. It maps absolute paths to repository-relative core changes and does not inspect Bash/Git changes.
 M4 delivered PR [#11](https://github.com/salman0butt/Tattoo/pull/11): one local stdio MCP server with a read-only `tattoo_check` tool. It exposes existing policy evaluation without duplicating core logic or claiming agent enforcement.
 M5 delivered PR [#12](https://github.com/salman0butt/Tattoo/pull/12): bounded exact-phrase rule authoring through `tattoo add`, with validated policy updates and explicit rejection of unsupported wording.
@@ -41,7 +41,7 @@ M5 delivered PR [#12](https://github.com/salman0butt/Tattoo/pull/12): bounded ex
 
 ### Current next action
 
-M6 remains not started and requires an explicit milestone advance before implementation.
+Build a reproducible benchmark command and release-readiness check, wire both into CI, document their measurement limits, and keep publishing/tagging/releasing deferred.
 
 ## Milestone ledger
 
@@ -52,7 +52,7 @@ Detailed scopes are defined in `docs/roadmap.md`.
 - **M3 — Enforcement Adapters:** COMPLETE — first Claude Code `Write`/`Edit` adapter merged and verified in PR #10.
 - **M4 — MCP and Workflow Integrations:** COMPLETE — first local stdio MCP server merged and verified in PR #11.
 - **M5 — Natural-Language Rule Authoring:** COMPLETE — PR #12 merged and post-merge `main` CI green at `499b0bc` (run `34689034368`).
-- **M6 — Benchmarks, Hardening, and First Release:** NOT STARTED — do not implement until explicitly authorized.
+- **M6 — Benchmarks, Hardening, and First Release:** IN PROGRESS — explicitly advanced by the user; implement benchmark and release-readiness checks only, with publication and release actions deferred.
 
 ## Fresh-run recovery order
 

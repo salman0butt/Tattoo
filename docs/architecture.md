@@ -2,7 +2,7 @@
 
 Tattoo separates observation from policy. Future adapters observe agent/tool activity and construct normalized `ChangeSet` objects. `@tattoo-ai/config` loads and validates JSON policy and change-set files, while `@tattoo-ai/core` evaluates rules synchronously and returns stable structured violations and a final decision.
 
-M1 core remains deliberately pure with respect to external systems: no file or config loading, Git inspection, shell/process execution, network access, LLM calls, hooks, telemetry, or vendor SDKs. M2 file access is confined to the configuration and CLI packages. M3 adds a narrow Claude Code adapter outside core; M4 adds a local MCP workflow server outside core.
+M1 core remains deliberately pure with respect to external systems: no file or config loading, Git inspection, shell/process execution, network access, LLM calls, hooks, telemetry, or vendor SDKs. M2 file access is confined to the configuration and CLI packages. M3 adds a narrow Claude Code adapter outside core; M4 adds a local MCP workflow server outside core. M6 benchmark and release scripts are developer-only tooling that imports built public entrypoints and never changes production evaluation behavior.
 
 ```text
                    .tattoo policy
@@ -32,6 +32,8 @@ M1 core remains deliberately pure with respect to external systems: no file or c
 ```
 
 M2 implements the JSON configuration layer and local CLI. M3 adds a Claude Code adapter that reads `PreToolUse` JSON, observes `Write` and `Edit` file targets, and translates core decisions into Claude Code hook responses. M4 adds an MCP server that loads policy and evaluates caller-supplied normalized change sets over stdio. Repository and Git observation outside those tool calls remain future adapter responsibilities.
+
+M6's benchmark runner asserts fixed core and Claude adapter scenarios before measuring them with fixed warmups and iterations. Its output is a local/CI measurement artifact, not an agent-effectiveness claim. The release audit validates package metadata and dry-run tarball contents without publishing or changing versions.
 
 ## Rule model
 

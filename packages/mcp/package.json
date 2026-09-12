@@ -2,8 +2,16 @@
   "name": "@tattoo-ai/mcp",
   "version": "0.1.0",
   "description": "Local MCP workflow integration for Tattoo",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/salman0butt/Tattoo.git",
+    "directory": "packages/mcp"
+  },
   "type": "module",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=22"
   },

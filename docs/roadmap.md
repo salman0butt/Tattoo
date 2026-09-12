@@ -52,11 +52,13 @@ Implemented in PR #12 and merged to `main` at `499b0bcf8a76371dd6e626e8742db81be
 
 ## M6 — Benchmarks, Hardening, and First Release
 
-**Status:** NOT STARTED
+**Status:** IN PROGRESS
 
 Build a reproducible evaluation suite for rule correctness, adapter observation coverage, compatibility, and overhead; harden packaging/documentation; and prepare the first public package release. No benchmark numbers are claimed before a real methodology and measurements exist. Publishing, tagging, and releasing require explicit authorization.
 
 The benchmark plan is to compare the same agent on adversarial tasks with and without Tattoo, such as fixing a typo while avoiding unrelated cleanup, implementing login without installing a package, changing only `src/registration/**`, preserving a public API response, and leaving migrations untouched. Measure explicit constraint violations, unauthorized paths, dependency changes, protected deletions, diff-budget violations, false-positive blocks, and evaluation overhead.
+
+The first M6 slice is a checked-in `pnpm benchmark` harness for deterministic core and Claude adapter scenarios. It asserts expected decisions before timing fixed warmups and iterations, then emits machine-readable measurements without committing a baseline number. It measures evaluator/adapter behavior and overhead, not an end-to-end comparison of agents with and without Tattoo. A `pnpm release:check` audit validates public package metadata and tarball entrypoints. Publishing, tagging, and releasing remain separately authorized actions.
 
 ## Outside the current roadmap
 
