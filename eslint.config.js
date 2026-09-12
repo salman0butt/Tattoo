@@ -13,6 +13,7 @@ export default tseslint.config(
             'packages/core/src/index.test.ts',
             'packages/config/src/index.test.ts',
             'packages/cli/src/index.test.ts',
+            'packages/cli/src/authoring.test.ts',
             'packages/claude-code/src/index.test.ts',
             'packages/mcp/src/index.test.ts',
           ],

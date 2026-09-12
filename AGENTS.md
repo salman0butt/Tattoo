@@ -25,6 +25,6 @@ Tattoo core is a local-first deterministic policy evaluator. Keep `packages/core
 - Avoid speculative abstractions, unrelated cleanup, and unnecessary dependencies.
 - Document security-sensitive decisions and keep validation at trust boundaries.
 
-## Current milestone: M4 — MCP and workflow integrations (COMPLETE)
+## Current milestone: M5 — Natural-language rule authoring (IN PROGRESS)
 
-M3 implemented one Claude Code `PreToolUse` adapter for `Write` and `Edit` calls and merged it in PR #10 at `93c5083`. M4 implemented one local stdio MCP integration and merged it in PR #11 at `6d81296`. Keep `packages/core`, `packages/config`, and vendor adapters free of duplicated policy logic; NL rule compilation, cloud features, publication, and releases remain deferred.
+M1 through M4 are complete and verified on `main`. The user explicitly advanced the work with “continue”, authorizing M5. M5 is limited to a bounded deterministic phrase compiler and a tested `tattoo add` CLI command; unsupported wording must be rejected rather than guessed. Keep `packages/core` vendor/model independent and keep generated rules as reviewable structured policy. Cloud features, publication, releases, and broader language understanding remain deferred.
