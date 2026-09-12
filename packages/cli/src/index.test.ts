@@ -3,8 +3,11 @@ import {
   mkdir,
   mkdtemp,
   readFile,
+  lstat,
+  realpath,
   rm,
   stat,
+  symlink,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -100,6 +103,25 @@ describe('tattoo CLI', () => {
       }),
     ).toBe(0);
     expect((await stat(policyPath)).mode & 0o777).toBe(0o600);
+  });
+
+  it('updates a policy symlink target without replacing the symlink', async () => {
+    const directory = await temporaryDirectory();
+    await mkdir(join(directory, '.tattoo'));
+    const targetPath = join(directory, '.tattoo/policy-target.json');
+    const policyPath = join(directory, '.tattoo/policy-link.json');
+    await writeFile(targetPath, '{"rules":[]}', 'utf8');
+    await symlink(await realpath(targetPath), policyPath);
+    const result = output();
+
+    expect(
+      await runCli(
+        ['add', 'never add a new dependency', '--policy', policyPath],
+        { cwd: directory, io: result.io },
+      ),
+    ).toBe(0);
+    expect(await readFile(targetPath, 'utf8')).toContain('no-new-dependencies');
+    expect((await lstat(policyPath)).isSymbolicLink()).toBe(true);
   });
 
   it('rejects unsupported rule text without changing the policy', async () => {

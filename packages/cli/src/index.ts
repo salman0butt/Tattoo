@@ -5,6 +5,7 @@ import { realpathSync } from 'node:fs';
 import {
   chmod,
   mkdir,
+  realpath,
   rename,
   stat,
   unlink,
@@ -179,8 +180,9 @@ async function addRule(args: ParsedArgs, io: CliIo): Promise<number> {
     throw new CliError(`Rule id ${rule.id} already exists`);
 
   const updatedPolicy = { ...policy, rules: [...policy.rules, rule] };
-  const policyMode = (await stat(args.policyPath)).mode & 0o7777;
-  const temporaryPath = `${args.policyPath}.${randomUUID()}.tmp`;
+  const policyTargetPath = await realpath(args.policyPath);
+  const policyMode = (await stat(policyTargetPath)).mode & 0o7777;
+  const temporaryPath = `${policyTargetPath}.${randomUUID()}.tmp`;
   try {
     await writeFile(
       temporaryPath,
@@ -188,7 +190,7 @@ async function addRule(args: ParsedArgs, io: CliIo): Promise<number> {
       { encoding: 'utf8', flag: 'wx' },
     );
     await chmod(temporaryPath, policyMode);
-    await rename(temporaryPath, args.policyPath);
+    await rename(temporaryPath, policyTargetPath);
   } catch (error) {
     await unlink(temporaryPath).catch(() => undefined);
     throw error;
