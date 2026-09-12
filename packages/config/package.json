@@ -2,8 +2,16 @@
   "name": "@tattoo-ai/config",
   "version": "0.1.0",
   "description": "JSON configuration loading for Tattoo",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/salman0butt/Tattoo.git",
+    "directory": "packages/config"
+  },
   "type": "module",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=22"
   },

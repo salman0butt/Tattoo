@@ -25,6 +25,8 @@ Milestone 4 adds `@tattoo-ai/mcp`, a local stdio MCP server with one read-only `
 
 Milestone 5 adds bounded natural-language rule authoring to the CLI. It accepts four documented phrases and writes the corresponding structured rule; unsupported wording is rejected.
 
+Milestone 6 adds a reproducible evaluator benchmark harness and an audit-only release-readiness check for the public packages. Packages are not published yet.
+
 The core has no LLM, network, filesystem, process, Git, shell, hook, or agent-vendor dependency.
 
 ## Status
@@ -186,11 +188,11 @@ Tattoo guarantees deterministic evaluation of the input it receives. It does not
 
 ## Roadmap
 
-Configuration loading and a local CLI are implemented in M2. The first Claude Code enforcement adapter is implemented in M3, the first local MCP workflow tool is implemented in M4, and bounded natural-language rule authoring is implemented in M5. Additional adapters, MCP capabilities, broader language understanding, and empirical benchmarks remain planned. See the [roadmap](docs/roadmap.md).
+Configuration loading and a local CLI are implemented in M2. The first Claude Code enforcement adapter is implemented in M3, the first local MCP workflow tool is implemented in M4, bounded natural-language rule authoring is implemented in M5, and evaluator benchmarks/release auditing are implemented in M6. Additional adapters, broader language understanding, end-to-end agent benchmarks, and package publication remain planned. See the [roadmap](docs/roadmap.md).
 
 ## Development
 
-Requires Node 22+ and pnpm 10. Run `pnpm install --frozen-lockfile` followed by `pnpm check`.
+Requires Node 22+ and pnpm 10. Run `pnpm install --frozen-lockfile` followed by `pnpm check`. Run `pnpm --silent benchmark` for machine-readable fixed evaluator measurements and `pnpm release:check` for the package audit; both commands build first and do not publish or change versions.
 
 Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup and test expectations, and [SECURITY.md](SECURITY.md) for private vulnerability reporting.
 

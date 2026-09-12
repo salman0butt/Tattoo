@@ -25,6 +25,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
+      - run: pnpm benchmark
+      - run: pnpm release:check
       - name: Packed package consumer import
         shell: bash
         run: |

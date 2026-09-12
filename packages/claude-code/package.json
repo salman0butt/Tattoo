@@ -2,8 +2,16 @@
   "name": "@tattoo-ai/claude-code",
   "version": "0.1.0",
   "description": "Claude Code enforcement adapter for Tattoo",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/salman0butt/Tattoo.git",
+    "directory": "packages/claude-code"
+  },
   "type": "module",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=22"
   },

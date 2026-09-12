@@ -2,8 +2,16 @@
   "name": "@tattoo-ai/core",
   "version": "0.1.0",
   "description": "Deterministic policy engine for AI coding-agent constraints",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/salman0butt/Tattoo.git",
+    "directory": "packages/core"
+  },
   "type": "module",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=22"
   },

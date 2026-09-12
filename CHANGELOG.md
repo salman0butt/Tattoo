@@ -11,3 +11,4 @@ All notable changes will be documented here.
 - M3 Claude Code `PreToolUse` enforcement adapter for `Write` and `Edit`, with fail-closed input and file-boundary handling.
 - M4 local stdio MCP server with a read-only `tattoo_check` workflow tool.
 - M5 bounded exact-phrase rule authoring through the CLI's `add` command.
+- M6 fixed-scenario evaluator benchmark harness and audit-only release-readiness check.
