@@ -1,6 +1,16 @@
 #!/usr/bin/env node
 
-import { mkdir, writeFile } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
+import { realpathSync } from 'node:fs';
+import {
+  chmod,
+  mkdir,
+  realpath,
+  rename,
+  stat,
+  unlink,
+  writeFile,
+} from 'node:fs/promises';
 import { dirname, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -10,6 +20,7 @@ import {
   loadPolicyFile,
 } from '@tattoo-ai/config';
 import { evaluatePolicy, type EvaluationResult } from '@tattoo-ai/core';
+import { compileRuleText } from './authoring.js';
 
 export interface CliIo {
   stdout: (text: string) => void;
@@ -21,13 +32,14 @@ export interface CliOptions {
   io?: CliIo;
 }
 
-type Command = 'help' | 'init' | 'check' | 'explain';
+type Command = 'help' | 'init' | 'add' | 'check' | 'explain';
 
 interface ParsedArgs {
   command: Command;
   cwd: string;
   policyPath: string;
   changesPath?: string;
+  ruleText?: string;
   json: boolean;
   force: boolean;
 }
@@ -36,6 +48,7 @@ class CliError extends Error {}
 
 const usage = `Usage:
   tattoo init [--policy <path>] [--force] [--json]
+  tattoo add <phrase> [--policy <path>] [--json]
   tattoo check --changes <path> [--policy <path>] [--json]
   tattoo explain --changes <path> [--policy <path>] [--json]
 
@@ -68,15 +81,22 @@ function parseArgs(args: readonly string[], cwd: string): ParsedArgs {
       json: false,
       force: false,
     };
-  if (command !== 'init' && command !== 'check' && command !== 'explain')
+  if (
+    command !== 'init' &&
+    command !== 'add' &&
+    command !== 'check' &&
+    command !== 'explain'
+  )
     throw new CliError(`Unknown command: ${command}`);
 
   let policyPath = DEFAULT_POLICY_PATH;
   let changesPath: string | undefined;
+  const ruleTextParts: string[] = [];
   let json = false;
   let force = false;
   for (let index = 1; index < args.length; index += 1) {
     const argument = args[index];
+    if (argument === undefined) throw new CliError('Missing argument');
     if (argument === '--policy') {
       policyPath = requireValue(args, index, '--policy');
       index += 1;
@@ -87,6 +107,8 @@ function parseArgs(args: readonly string[], cwd: string): ParsedArgs {
       json = true;
     } else if (argument === '--force') {
       force = true;
+    } else if (command === 'add' && !argument.startsWith('--')) {
+      ruleTextParts.push(argument);
     } else {
       throw new CliError(`Unknown option: ${argument}`);
     }
@@ -94,9 +116,16 @@ function parseArgs(args: readonly string[], cwd: string): ParsedArgs {
 
   if (command === 'init' && changesPath)
     throw new CliError('--changes is only valid for check and explain');
-  if (command !== 'init' && force)
+  if (
+    (command === 'add' || command === 'check' || command === 'explain') &&
+    force
+  )
     throw new CliError('--force is only valid for init');
-  if (command !== 'init' && !changesPath)
+  if (command === 'add' && changesPath)
+    throw new CliError('--changes is only valid for check and explain');
+  if (command === 'add' && ruleTextParts.length === 0)
+    throw new CliError('a rule phrase is required for add');
+  if (command !== 'init' && command !== 'add' && !changesPath)
     throw new CliError('--changes is required for check and explain');
 
   return {
@@ -104,6 +133,7 @@ function parseArgs(args: readonly string[], cwd: string): ParsedArgs {
     cwd,
     policyPath: resolve(cwd, policyPath),
     ...(changesPath ? { changesPath: resolve(cwd, changesPath) } : {}),
+    ...(ruleTextParts.length ? { ruleText: ruleTextParts.join(' ') } : {}),
     json,
     force,
   };
@@ -143,6 +173,37 @@ async function initializePolicy(args: ParsedArgs, io: CliIo): Promise<number> {
   return 0;
 }
 
+async function addRule(args: ParsedArgs, io: CliIo): Promise<number> {
+  const rule = compileRuleText(args.ruleText!);
+  const policy = await loadPolicyFile(args.policyPath);
+  if (policy.rules.some((existing) => existing.id === rule.id))
+    throw new CliError(`Rule id ${rule.id} already exists`);
+
+  const updatedPolicy = { ...policy, rules: [...policy.rules, rule] };
+  const policyTargetPath = await realpath(args.policyPath);
+  const policyMode = (await stat(policyTargetPath)).mode & 0o7777;
+  const temporaryPath = `${policyTargetPath}.${randomUUID()}.tmp`;
+  try {
+    await writeFile(
+      temporaryPath,
+      `${JSON.stringify(updatedPolicy, null, 2)}\n`,
+      { encoding: 'utf8', flag: 'wx' },
+    );
+    await chmod(temporaryPath, policyMode);
+    await rename(temporaryPath, policyTargetPath);
+  } catch (error) {
+    await unlink(temporaryPath).catch(() => undefined);
+    throw error;
+  }
+  const output = {
+    path: displayPath(args.policyPath, args.cwd),
+    rule,
+  };
+  if (args.json) io.stdout(`${JSON.stringify(output, null, 2)}\n`);
+  else io.stdout(`Added ${rule.id} to ${output.path}\n`);
+  return 0;
+}
+
 function renderEvaluation(result: EvaluationResult, detailed: boolean): string {
   const lines = [result.decision.toUpperCase()];
   for (const item of result.violations) {
@@ -167,6 +228,7 @@ export async function runCli(
       return 0;
     }
     if (parsed.command === 'init') return await initializePolicy(parsed, io);
+    if (parsed.command === 'add') return await addRule(parsed, io);
 
     const policy = await loadPolicyFile(parsed.policyPath);
     const changes = await loadChangeSetFile(parsed.changesPath!);
@@ -181,10 +243,18 @@ export async function runCli(
   }
 }
 
-if (
-  process.argv[1] &&
-  import.meta.url === pathToFileURL(resolve(process.argv[1])).href
-)
+function isMainModule(): boolean {
+  if (!process.argv[1]) return false;
+  try {
+    return (
+      import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href
+    );
+  } catch {
+    return false;
+  }
+}
+
+if (isMainModule())
   void runCli(process.argv.slice(2)).then(
     (code) => {
       process.exitCode = code;

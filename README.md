@@ -23,6 +23,8 @@ Milestone 3 adds `@tattoo-ai/claude-code`, a fail-closed Claude Code `PreToolUse
 
 Milestone 4 adds `@tattoo-ai/mcp`, a local stdio MCP server with one read-only `tattoo_check` workflow tool.
 
+Milestone 5 adds bounded natural-language rule authoring to the CLI. It accepts four documented phrases and writes the corresponding structured rule; unsupported wording is rejected.
+
 The core has no LLM, network, filesystem, process, Git, shell, hook, or agent-vendor dependency.
 
 ## Status
@@ -107,11 +109,14 @@ The CLI does not inspect Git or the repository yet. It evaluates a normalized ch
 ```bash
 pnpm --filter @tattoo-ai/cli build
 node packages/cli/dist/index.js init
+node packages/cli/dist/index.js add "never add a new dependency"
 node packages/cli/dist/index.js check --changes changes.json
 node packages/cli/dist/index.js explain --policy .tattoo/policy.json --changes changes.json --json
 ```
 
 `init` creates `.tattoo/policy.json` and never overwrites it without `--force`. `check` prints a concise decision; `explain` includes violation metadata. `--json` emits machine-readable evaluation output. Exit codes are `0` for `allow`/`warn`, `1` for `block`, and `2` for usage or configuration/input errors.
+
+`add` appends one generated rule to an existing policy. The supported phrases are `never add a new dependency`, `never delete an existing test`, `only modify src/auth/**`, and `don't touch database migrations`. Matching is case-insensitive with repeated whitespace normalized, but arbitrary or unsupported wording is rejected rather than guessed. Review or edit the generated JSON before relying on it.
 
 ### Claude Code hook
 
@@ -179,7 +184,7 @@ Tattoo guarantees deterministic evaluation of the input it receives. It does not
 
 ## Roadmap
 
-Configuration loading and a local CLI are implemented in M2. The first Claude Code enforcement adapter is implemented in M3, and the first local MCP workflow tool is implemented in M4. Additional adapters, MCP capabilities, optional natural-language rule authoring, and empirical benchmarks remain planned. See the [roadmap](docs/roadmap.md).
+Configuration loading and a local CLI are implemented in M2. The first Claude Code enforcement adapter is implemented in M3, the first local MCP workflow tool is implemented in M4, and bounded natural-language rule authoring is implemented in M5. Additional adapters, MCP capabilities, broader language understanding, and empirical benchmarks remain planned. See the [roadmap](docs/roadmap.md).
 
 ## Development
 

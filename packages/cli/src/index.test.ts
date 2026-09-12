@@ -1,4 +1,15 @@
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import {
+  chmod,
+  mkdir,
+  mkdtemp,
+  readFile,
+  lstat,
+  realpath,
+  rm,
+  stat,
+  symlink,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -46,6 +57,115 @@ describe('tattoo CLI', () => {
     const second = output();
     expect(await runCli(['init'], { cwd: directory, io: second.io })).toBe(2);
     expect(second.stderr.join('')).toMatch(/already exists/);
+  });
+
+  it('adds a compiled rule to an existing policy', async () => {
+    const directory = await temporaryDirectory();
+    await mkdir(join(directory, '.tattoo'));
+    await writeFile(
+      join(directory, '.tattoo/policy.json'),
+      '{"rules":[]}',
+      'utf8',
+    );
+    const result = output();
+
+    expect(
+      await runCli(['add', 'never add a new dependency', '--json'], {
+        cwd: directory,
+        io: result.io,
+      }),
+    ).toBe(0);
+    expect(JSON.parse(result.stdout.join(''))).toEqual({
+      path: '.tattoo/policy.json',
+      rule: {
+        id: 'no-new-dependencies',
+        type: 'dependency-guard',
+        forbid: ['new-production', 'new-development'],
+      },
+    });
+    await expect(
+      readFile(join(directory, '.tattoo/policy.json'), 'utf8'),
+    ).resolves.toContain('no-new-dependencies');
+  });
+
+  it('preserves policy file permissions when adding a rule', async () => {
+    const directory = await temporaryDirectory();
+    await mkdir(join(directory, '.tattoo'));
+    const policyPath = join(directory, '.tattoo/policy.json');
+    await writeFile(policyPath, '{"rules":[]}', 'utf8');
+    await chmod(policyPath, 0o600);
+    const result = output();
+
+    expect(
+      await runCli(['add', 'never add a new dependency'], {
+        cwd: directory,
+        io: result.io,
+      }),
+    ).toBe(0);
+    expect((await stat(policyPath)).mode & 0o777).toBe(0o600);
+  });
+
+  it('updates a policy symlink target without replacing the symlink', async () => {
+    const directory = await temporaryDirectory();
+    await mkdir(join(directory, '.tattoo'));
+    const targetPath = join(directory, '.tattoo/policy-target.json');
+    const policyPath = join(directory, '.tattoo/policy-link.json');
+    await writeFile(targetPath, '{"rules":[]}', 'utf8');
+    await symlink(await realpath(targetPath), policyPath);
+    const result = output();
+
+    expect(
+      await runCli(
+        ['add', 'never add a new dependency', '--policy', policyPath],
+        { cwd: directory, io: result.io },
+      ),
+    ).toBe(0);
+    expect(await readFile(targetPath, 'utf8')).toContain('no-new-dependencies');
+    expect((await lstat(policyPath)).isSymbolicLink()).toBe(true);
+  });
+
+  it('rejects unsupported rule text without changing the policy', async () => {
+    const directory = await temporaryDirectory();
+    await mkdir(join(directory, '.tattoo'));
+    const policyPath = join(directory, '.tattoo/policy.json');
+    const original = '{"rules":[]}';
+    await writeFile(policyPath, original, 'utf8');
+    const result = output();
+
+    expect(
+      await runCli(['add', 'never change the public API'], {
+        cwd: directory,
+        io: result.io,
+      }),
+    ).toBe(2);
+    expect(result.stderr.join('')).toMatch(/Unsupported rule text/);
+    await expect(readFile(policyPath, 'utf8')).resolves.toBe(original);
+  });
+
+  it('rejects adding a rule whose generated id already exists', async () => {
+    const directory = await temporaryDirectory();
+    await mkdir(join(directory, '.tattoo'));
+    const policyPath = join(directory, '.tattoo/policy.json');
+    const original = JSON.stringify({
+      rules: [
+        {
+          id: 'no-new-dependencies',
+          type: 'dependency-guard',
+          forbid: ['new-production', 'new-development'],
+        },
+      ],
+    });
+    await writeFile(policyPath, original, 'utf8');
+    const result = output();
+
+    expect(
+      await runCli(['add', 'never add a new dependency'], {
+        cwd: directory,
+        io: result.io,
+      }),
+    ).toBe(2);
+    expect(result.stderr.join('')).toMatch(/already exists/);
+    await expect(readFile(policyPath, 'utf8')).resolves.toBe(original);
   });
 
   it('checks changes with human output and a blocking exit code', async () => {
