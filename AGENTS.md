@@ -25,6 +25,6 @@ Tattoo core is a local-first deterministic policy evaluator. Keep `packages/core
 - Avoid speculative abstractions, unrelated cleanup, and unnecessary dependencies.
 - Document security-sensitive decisions and keep validation at trust boundaries.
 
-## Current milestone: M6 — Benchmarks, hardening, and first release (IN PROGRESS)
+## Current milestone: M6 — Benchmarks, hardening, and first release (COMPLETE)
 
-M1 through M5 are complete and verified on `main`. M6 was explicitly advanced by the user with “continue”. This milestone is limited to a reproducible benchmark harness, release metadata/tarball checks, and accurate documentation. Do not publish packages, create tags/releases, or claim end-to-end agent benchmark results without separate authorization and real measurements. Keep `packages/core` vendor/model independent and keep generated rules as reviewable structured policy.
+M1 through M6 are complete and verified on `main`. M6 was explicitly advanced by the user with “continue” and merged in PR #13 at `126ea30`. It delivered a reproducible benchmark harness, release metadata/tarball checks, and accurate documentation. Do not publish packages, create tags/releases, or claim end-to-end agent benchmark results without separate authorization and real measurements. Keep `packages/core` vendor/model independent and keep generated rules as reviewable structured policy.
