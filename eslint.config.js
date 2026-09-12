@@ -3,13 +3,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: [
-      '**/dist/**',
-      '**/coverage/**',
-      'benchmarks/**/*.mjs',
-      'scripts/**/*.mjs',
-      'eslint.config.js',
-    ],
+    ignores: ['**/dist/**', '**/coverage/**', 'eslint.config.js'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
@@ -28,6 +22,14 @@ export default tseslint.config(
         },
         tsconfigRootDir: import.meta.dirname,
       },
+    },
+  },
+  {
+    ...tseslint.configs.disableTypeChecked,
+    files: ['benchmarks/**/*.mjs', 'scripts/**/*.mjs'],
+    languageOptions: {
+      ...tseslint.configs.disableTypeChecked.languageOptions,
+      globals: { process: 'readonly' },
     },
   },
 );
