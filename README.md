@@ -31,6 +31,8 @@ The core has no LLM, network, filesystem, process, Git, shell, hook, or agent-ve
 
 Milestone 4 is the first workflow integration. Its `tattoo_check` tool accepts a normalized change set, loads the configured policy, and returns the deterministic core result as JSON text. It does not observe or block agent actions. M3 remains the only enforcement adapter; it observes the absolute target path in Claude Code `Write` and `Edit` calls and maps it to a repository-relative `add` or `modify` change.
 
+M5 adds a bounded authoring convenience: `tattoo add` converts four documented phrases into reviewable structured rules. It rejects unsupported wording and does not call a model or enforce changes by itself.
+
 ## Conceptual flow
 
 ```text

@@ -42,11 +42,13 @@ Implemented in PR #11 and merged to `main` at `6d812960281d3c5dbc6cdb83c4ba81055
 
 ## M5 — Natural-Language Rule Authoring
 
-**Status:** IN PROGRESS
+**Status:** COMPLETE
 
 Add optional natural-language assistance for authoring explicit deterministic Tattoo rules. Generated rules remain reviewable structured policy; an LLM must never become the enforcement authority or replace deterministic evaluation.
 
 The first slice is deliberately bounded: `tattoo add` accepts four documented phrases, compiles them through a deterministic exact-match normalizer, appends the resulting structured rule to an existing policy, and rejects unsupported wording. It does not call a model, infer arbitrary paths from prose, inspect a repository, or broaden core semantics.
+
+Implemented in PR #12 and merged to `main` at `499b0bcf8a76371dd6e626e8742db81be9e27407`. Post-merge CI run `34689034368` passed on Node 22 and Node 24.
 
 ## M6 — Benchmarks, Hardening, and First Release
 

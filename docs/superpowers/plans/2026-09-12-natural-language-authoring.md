@@ -87,6 +87,6 @@
 - Modify: `AGENTS.md`
 - Modify: `docs/roadmap.md`
 
-- [ ] **Step 1: Request skeptical review of the exact PR head and fix Critical/Important findings.
-- [ ] **Step 2: Push the branch, wait for exact-head CI, and merge only with green checks and no unresolved Important findings.
-- [ ] **Step 3: Verify post-merge `main` CI, update durable records with exact SHA/run, and confirm a clean worktree.
+- [x] **Step 1: Request skeptical review of the exact PR head and fix Critical/Important findings.
+- [x] **Step 2: Push the branch, wait for exact-head CI, and merge only with green checks and no unresolved Important findings.
+- [x] **Step 3: Verify post-merge `main` CI, update durable records with exact SHA/run, and confirm a clean worktree.

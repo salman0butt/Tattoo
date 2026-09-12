@@ -4,13 +4,14 @@ This file is the durable handoff for fresh autonomous runs. GitHub state remains
 
 ## Current milestone
 
-**M5 — Natural-language rule authoring: IN PROGRESS**
+**M5 — Natural-language rule authoring: COMPLETE**
 
 Current branch: `main`
 Current PR: none
-M1, M2, M3, and M4 are merged and verified. The latest verified `main` commit is `4de6e44948810d28723529dc0f0671c12609739f`, with post-merge CI run `34637784943` green on Node 22 and Node 24.
+M1 through M5 are merged and verified. The latest verified `main` commit is `499b0bcf8a76371dd6e626e8742db81be9e27407`, with post-merge CI run `34689034368` green on Node 22 and Node 24.
 M3 delivered PR [#10](https://github.com/salman0butt/Tattoo/pull/10): one Claude Code `PreToolUse` adapter for `Write` and `Edit` file calls. It maps absolute paths to repository-relative core changes and does not inspect Bash/Git changes.
 M4 delivered PR [#11](https://github.com/salman0butt/Tattoo/pull/11): one local stdio MCP server with a read-only `tattoo_check` tool. It exposes existing policy evaluation without duplicating core logic or claiming agent enforcement.
+M5 delivered PR [#12](https://github.com/salman0butt/Tattoo/pull/12): bounded exact-phrase rule authoring through `tattoo add`, with validated policy updates and explicit rejection of unsupported wording.
 
 ### M1 completion checklist
 
@@ -40,7 +41,7 @@ M4 delivered PR [#11](https://github.com/salman0butt/Tattoo/pull/11): one local 
 
 ### Current next action
 
-Open the M5 PR, obtain skeptical review, verify exact-head CI, merge only with green checks, then record post-merge `main` SHA and CI.
+M6 remains not started and requires an explicit milestone advance before implementation.
 
 ## Milestone ledger
 
@@ -50,7 +51,7 @@ Detailed scopes are defined in `docs/roadmap.md`.
 - **M2 — Configuration and CLI:** COMPLETE — JSON config/change-set loading and local CLI merged and verified.
 - **M3 — Enforcement Adapters:** COMPLETE — first Claude Code `Write`/`Edit` adapter merged and verified in PR #10.
 - **M4 — MCP and Workflow Integrations:** COMPLETE — first local stdio MCP server merged and verified in PR #11.
-- **M5 — Natural-Language Rule Authoring:** IN PROGRESS — explicitly advanced by the user; implement only the bounded deterministic authoring slice.
+- **M5 — Natural-Language Rule Authoring:** COMPLETE — PR #12 merged and post-merge `main` CI green at `499b0bc` (run `34689034368`).
 - **M6 — Benchmarks, Hardening, and First Release:** NOT STARTED — do not implement until explicitly authorized.
 
 ## Fresh-run recovery order
