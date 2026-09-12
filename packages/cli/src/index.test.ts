@@ -1,4 +1,12 @@
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import {
+  chmod,
+  mkdir,
+  mkdtemp,
+  readFile,
+  rm,
+  stat,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -75,6 +83,23 @@ describe('tattoo CLI', () => {
     await expect(
       readFile(join(directory, '.tattoo/policy.json'), 'utf8'),
     ).resolves.toContain('no-new-dependencies');
+  });
+
+  it('preserves policy file permissions when adding a rule', async () => {
+    const directory = await temporaryDirectory();
+    await mkdir(join(directory, '.tattoo'));
+    const policyPath = join(directory, '.tattoo/policy.json');
+    await writeFile(policyPath, '{"rules":[]}', 'utf8');
+    await chmod(policyPath, 0o600);
+    const result = output();
+
+    expect(
+      await runCli(['add', 'never add a new dependency'], {
+        cwd: directory,
+        io: result.io,
+      }),
+    ).toBe(0);
+    expect((await stat(policyPath)).mode & 0o777).toBe(0o600);
   });
 
   it('rejects unsupported rule text without changing the policy', async () => {
