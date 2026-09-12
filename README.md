@@ -1,64 +1,297 @@
 # Tattoo
 
-> **Agents forget. Tattoos don't.**
+> Agents forget. Tattoos don't.
 
-Deterministic guardrails for AI coding agents. Tattoo turns explicit project constraints into auditable `allow`, `warn`, or `block` decisions.
+Tattoo is a small, local-first policy engine for AI coding agents. It turns important project rules into deterministic `allow`, `warn`, or `block` decisions that can be reviewed, tested, and reused across agent tools.
 
-Prompt instructions are useful context, but an agent can forget, misread, or rationalize around them. Tattoo evaluates the normalized facts supplied by an integration in code, without asking an LLM to grade its own work.
+An instruction in `AGENTS.md` or `CLAUDE.md` is useful context, but it is still something an agent can forget or interpret differently. Tattoo gives the important constraints a separate, machine-checkable home.
 
-## What is implemented
+## What Tattoo does
 
-Milestone 1 ships `@tattoo-ai/core`, a pure TypeScript policy engine with:
+Tattoo evaluates facts about a proposed change:
 
-- path deny rules, including add, modify, delete, and rename operations;
-- allow-only path scopes and operation-specific protection;
-- deterministic production/development dependency-change guards;
-- changed-file, added-line, and deleted-line budgets;
-- runtime policy and input validation;
-- stable structured violations and `allow | warn | block` decisions.
+- which files are being added, modified, deleted, or renamed;
+- which production or development dependencies changed;
+- how many files and lines changed.
 
-Milestone 2 adds `@tattoo-ai/config` for validated JSON policy and change-set files, plus `@tattoo-ai/cli` with local `init`, `check`, and `explain` commands.
+It then applies the rules in `.tattoo/policy.json` and returns a stable result. The core evaluator does not call a model, access the network, inspect Git, or run shell commands.
 
-Milestone 3 adds `@tattoo-ai/claude-code`, a fail-closed Claude Code `PreToolUse` adapter for `Write` and `Edit` file calls.
+Tattoo is a guardrail, not a replacement for an agent and not a security sandbox. An integration must observe the agent action and pass accurate facts to Tattoo. If an agent bypasses the integration, Tattoo cannot see that action.
 
-Milestone 4 adds `@tattoo-ai/mcp`, a local stdio MCP server with one read-only `tattoo_check` workflow tool.
+## Packages
 
-Milestone 5 adds bounded natural-language rule authoring to the CLI. It accepts four documented phrases and writes the corresponding structured rule; unsupported wording is rejected.
+The repository contains five small packages:
 
-Milestone 6 adds a reproducible evaluator benchmark harness and an audit-only release-readiness check for the public packages. Packages are not published yet.
+| Package                  | Purpose                                                     |
+| ------------------------ | ----------------------------------------------------------- |
+| `@tattoo-ai/core`        | Pure deterministic policy evaluation                        |
+| `@tattoo-ai/config`      | JSON policy and change-set loading with validation          |
+| `@tattoo-ai/cli`         | Local `init`, `add`, `check`, and `explain` commands        |
+| `@tattoo-ai/claude-code` | Claude Code `PreToolUse` enforcement for `Write` and `Edit` |
+| `@tattoo-ai/mcp`         | Local stdio MCP server exposing `tattoo_check`              |
 
-The core has no LLM, network, filesystem, process, Git, shell, hook, or agent-vendor dependency.
+The first release is `v0.1.0`. All packages require Node.js 22 or newer.
 
-## Status
+## Quick start
 
-Milestone 4 is the first workflow integration. Its `tattoo_check` tool accepts a normalized change set, loads the configured policy, and returns the deterministic core result as JSON text. It does not observe or block agent actions. M3 remains the only enforcement adapter; it observes the absolute target path in Claude Code `Write` and `Edit` calls and maps it to a repository-relative `add` or `modify` change.
+Install the CLI in the project where you want to keep a policy:
 
-M5 adds a bounded authoring convenience: `tattoo add` converts four documented phrases into reviewable structured rules. It rejects unsupported wording and does not call a model or enforce changes by itself.
-
-## Conceptual flow
-
-```text
-AGENTS.md says: "Don't add dependencies."
-        |
-        v
-adapter observes a package change
-        |
-        v
-@tattoo-ai/core compares normalized before/after maps
-        |
-        v
-block + structured violation
+```bash
+npm install --save-dev @tattoo-ai/cli
 ```
 
-The runtime flow is:
+Create a policy and add a rule:
 
-`adapter-observed facts -> normalized ChangeSet -> @tattoo-ai/core -> EvaluationResult -> adapter enforcement`
+```bash
+npx tattoo init
+npx tattoo add "never add a new dependency"
+```
 
-Core guarantees deterministic evaluation of the normalized input it receives. It does **not** sandbox an agent. A malicious or broken adapter can omit or falsify observations, and an agent that can bypass the adapter can still change files directly.
+Tattoo checks normalized change-set JSON supplied by an integration or script:
 
-## Usage
+```bash
+npx tattoo check --changes changes.json
+```
 
-The package is currently workspace- and tarball-ready, but is not published to npm yet. From a consumer, import the public package entrypoint:
+Use `--json` for automation and `explain` when you want the violation metadata:
+
+```bash
+npx tattoo check --changes changes.json --json
+npx tattoo explain --changes changes.json --json
+```
+
+Exit codes are simple:
+
+- `0`: allowed or warning-only result;
+- `1`: at least one blocking rule was violated;
+- `2`: invalid arguments, policy, or change-set input.
+
+## The basic flow
+
+Every integration follows the same shape:
+
+```text
+agent tool call
+      |
+      v
+integration observes the action
+      |
+      v
+normalized ChangeSet
+      |
+      v
+@tattoo-ai/core evaluates policy
+      |
+      v
+allow / warn / block
+```
+
+The core is deliberately independent of Claude, OpenAI, GitHub, MCP, and other agent vendors. Adapters translate a vendor's hook payload into the common `ChangeSet` shape and translate the result back into that vendor's response format.
+
+## Writing a policy
+
+The policy is a JSON file at `.tattoo/policy.json` by default. A minimal policy looks like this:
+
+```json
+{
+  "rules": [
+    {
+      "id": "protect-migrations",
+      "type": "path-deny",
+      "patterns": ["migrations/**"]
+    },
+    {
+      "id": "no-production-dependencies",
+      "type": "dependency-guard",
+      "forbid": ["new-production"]
+    },
+    {
+      "id": "small-diff",
+      "type": "diff-budget",
+      "maxChangedFiles": 5,
+      "maxAddedLines": 200,
+      "maxDeletedLines": 100
+    }
+  ]
+}
+```
+
+Supported rule types:
+
+- `path-deny`: blocks or warns when a changed path matches one of the patterns;
+- `path-allow-only`: restricts changes to an allowed set of patterns;
+- `dependency-guard`: detects new, removed, or version-changed dependencies;
+- `diff-budget`: limits changed files, added lines, and deleted lines.
+
+Rules block by default. Set `"effect": "warn"` for an advisory rule. A blocking violation always wins over warnings. Results and violations are sorted deterministically, so the same policy and input produce the same output.
+
+Paths are repository-relative. Tattoo normalizes separators and rejects absolute paths and traversal outside the repository root.
+
+## Natural-language rule authoring
+
+`tattoo add` is intentionally bounded. It recognizes these exact rule phrases, ignoring case and repeated whitespace:
+
+```bash
+npx tattoo add "never add a new dependency"
+npx tattoo add "never delete an existing test"
+npx tattoo add "only modify src/auth/**"
+npx tattoo add "don't touch database migrations"
+```
+
+The command compiles the phrase into a normal, reviewable JSON rule. It does not call an LLM or guess what unsupported wording means. Unsupported phrases are rejected instead of silently creating a policy that looks right but does something else.
+
+## Change-set input
+
+The CLI and MCP server accept the same normalized input. For example:
+
+```json
+{
+  "files": [
+    {
+      "operation": "modify",
+      "path": "src/auth/login.ts",
+      "addedLines": 12,
+      "deletedLines": 3
+    }
+  ],
+  "dependencies": {
+    "before": {
+      "production": {
+        "react": "18.3.1"
+      }
+    },
+    "after": {
+      "production": {
+        "react": "18.3.1",
+        "zod": "4.6.2"
+      }
+    }
+  }
+}
+```
+
+A file change uses one of `add`, `modify`, `delete`, or `rename`. A rename includes both `path` and `previousPath`. Dependency snapshots use separate `production` and `development` maps.
+
+## Claude Code
+
+Tattoo provides a Claude Code `PreToolUse` command hook for `Write` and `Edit`. It runs before the file operation, loads the policy, maps the absolute target path to a repository-relative path, and returns Claude's permission response.
+
+Install the adapter in the project:
+
+```bash
+npm install --save-dev @tattoo-ai/claude-code
+```
+
+Add this to the project's `.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx --no-install tattoo-claude-hook --root \"$CLAUDE_PROJECT_DIR\""
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+The adapter maps decisions as follows:
+
+- `block` becomes Claude's `deny` response;
+- `warn` becomes Claude's `ask` response;
+- `allow` produces no hook output, leaving the normal Claude permission flow in place.
+
+Malformed input, an invalid policy, an outside-root path, or unreadable file state fails closed with exit code `2`.
+
+This adapter deliberately covers only `Write` and `Edit`. It does not automatically observe changes made through Bash, Git, deletes, renames, dependency installation, or another tool.
+
+## MCP hosts: Claude, Codex, Copilot, and others
+
+Tattoo also provides a local stdio MCP server. MCP is the most portable way to expose the evaluator to hosts that support MCP, including Claude Code, Codex, GitHub Copilot, VS Code, Cursor, and custom clients.
+
+Install it in the project:
+
+```bash
+npm install --save-dev @tattoo-ai/mcp
+```
+
+The server exposes one read-only tool, `tattoo_check`. It performs the normal policy evaluation over the `changes` object supplied by the host:
+
+```json
+{
+  "changes": {
+    "files": [{ "operation": "modify", "path": "src/auth/login.ts" }]
+  }
+}
+```
+
+For a direct local run:
+
+```bash
+npx --no-install tattoo-mcp --root "$PWD"
+```
+
+Claude Code uses an MCP server configuration such as:
+
+```json
+{
+  "mcpServers": {
+    "tattoo": {
+      "command": "npx",
+      "args": [
+        "--no-install",
+        "tattoo-mcp",
+        "--root",
+        "/absolute/path/to/repository"
+      ]
+    }
+  }
+}
+```
+
+Codex uses the same server through its MCP configuration. The server entry is written in Codex's TOML format:
+
+```toml
+[mcp_servers.tattoo]
+command = "npx"
+args = ["--no-install", "tattoo-mcp", "--root", "/absolute/path/to/repository"]
+```
+
+MCP support means the host can ask Tattoo to evaluate a change set. It does not automatically give Tattoo permission to observe or block every native tool call. Native enforcement still depends on an adapter or hook for that host.
+
+## Codex and GitHub Copilot support
+
+The common core is vendor-independent, but native hook payloads are not identical between products.
+
+| Host                           | Available in `v0.1.0` | What it means                                                                                                                |
+| ------------------------------ | --------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Claude Code                    | Yes                   | Native `Write`/`Edit` `PreToolUse` enforcement                                                                               |
+| Codex CLI                      | MCP workflow check    | `tattoo_check` can be registered as an MCP server; a native Codex `apply_patch`/Bash enforcement adapter is not included yet |
+| GitHub Copilot CLI/cloud agent | MCP workflow check    | Copilot can use the MCP server; a complete native camelCase hook adapter is not included yet                                 |
+| Other MCP hosts                | MCP workflow check    | Any host that supports local stdio MCP can discover and call `tattoo_check`                                                  |
+
+This distinction is intentional. Tattoo does not claim universal enforcement when an agent can make changes through a tool that the integration does not observe.
+
+## Web search and network tools
+
+Web search belongs to the agent or model platform, not to Tattoo. For example, Codex can expose a hosted web-search tool, and Claude and Copilot have their own web or fetch tools. Tattoo's local evaluator does not inspect the content of those hosted calls.
+
+If web access needs to be restricted, configure the vendor's own URL, network, sandbox, or tool allow-list controls. Use Tattoo for deterministic project-change rules such as protected paths, dependency changes, and diff budgets.
+
+## Using the core from TypeScript
+
+The core package is useful when an integration already has a normalized change set:
+
+```bash
+npm install @tattoo-ai/core
+```
 
 ```ts
 import { evaluatePolicy } from '@tattoo-ai/core';
@@ -74,127 +307,52 @@ const result = evaluatePolicy(
       },
     ],
   },
-  { files: [{ operation: 'delete', path: 'src/core.test.ts' }] },
+  {
+    files: [{ operation: 'delete', path: 'src/core.test.ts' }],
+  },
 );
 
 console.log(result.decision); // block
+console.log(result.violations);
 ```
 
-Rules default to `block`; set `effect: 'warn'` for advisory violations. Any block wins over warnings. Configuration errors throw `PolicyConfigurationError` rather than masquerading as policy decisions.
+The evaluator never mutates the policy or the change set. Invalid policy and change-set data are configuration errors, not policy decisions.
 
-`Mode` includes `chill | normal | strict | prison` as product vocabulary, but M1 intentionally gives modes no implicit semantics. Explicit rules remain the complete source of policy behavior.
+## Security boundary
 
-### Structured policy example
+Tattoo is designed to be transparent and easy to audit:
 
-Core consumes JavaScript/TypeScript objects. The M2 configuration layer loads the same policy shape from JSON; YAML and TOML remain future formats.
+- the core has no LLM, network, Git, shell, filesystem, or vendor SDK dependency;
+- configuration loading happens outside the core and validates untrusted JSON;
+- policy writes from `tattoo add` use a temporary file and atomic rename;
+- the Claude Code hook fails closed when its input, policy, path, or file-state checks fail;
+- every decision includes structured violations and reasons.
 
-```ts
-const policy = {
-  rules: [
-    {
-      id: 'protect-migrations',
-      type: 'path-deny',
-      patterns: ['migrations/**'],
-    },
-    {
-      id: 'small-diff',
-      type: 'diff-budget',
-      maxChangedFiles: 5,
-      maxAddedLines: 200,
-    },
-  ],
-};
-```
-
-### Local CLI
-
-The CLI does not inspect Git or the repository yet. It evaluates a normalized change-set JSON file supplied by a caller:
-
-```bash
-pnpm --filter @tattoo-ai/cli build
-node packages/cli/dist/index.js init
-node packages/cli/dist/index.js add "never add a new dependency"
-node packages/cli/dist/index.js check --changes changes.json
-node packages/cli/dist/index.js explain --policy .tattoo/policy.json --changes changes.json --json
-```
-
-`init` creates `.tattoo/policy.json` and never overwrites it without `--force`. `check` prints a concise decision; `explain` includes violation metadata. `--json` emits machine-readable evaluation output. Exit codes are `0` for `allow`/`warn`, `1` for `block`, and `2` for usage or configuration/input errors.
-
-`add` appends one generated rule to an existing policy. The supported phrases are `never add a new dependency`, `never delete an existing test`, `only modify src/auth/**`, and `don't touch database migrations`. Matching is case-insensitive with repeated whitespace normalized, but arbitrary or unsupported wording is rejected rather than guessed. Review or edit the generated JSON before relying on it.
-
-### Claude Code hook
-
-Build the adapter and register it as a `PreToolUse` command hook:
-
-```bash
-pnpm --filter @tattoo-ai/claude-code build
-```
-
-In Claude Code project settings, use the repository checkout's executable:
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PROJECT_DIR}/packages/claude-code/dist/index.js\""
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-The adapter reads `${CLAUDE_PROJECT_DIR}/.tattoo/policy.json` by default. Use `--root <path>` and `--policy <path>` to override the repository root or policy path. `Write` targets are classified as `add` when they do not exist and `modify` when they do; `Edit` targets are `modify`. A `block` becomes Claude's `deny` decision, a `warn` becomes `ask`, and an `allow` emits no response. Malformed input, invalid policy, outside-root paths, and unreadable file state fail closed with exit code `2` and stderr output.
-
-### MCP workflow server
-
-Build and run the local stdio server:
-
-```bash
-pnpm --filter @tattoo-ai/mcp build
-node packages/mcp/dist/index.js --root "$PWD"
-```
-
-Register the command in an MCP host that supports stdio servers:
-
-```json
-{
-  "mcpServers": {
-    "tattoo": {
-      "command": "node",
-      "args": [
-        "/absolute/path/to/Tattoo/packages/mcp/dist/index.js",
-        "--root",
-        "/absolute/path/to/repository"
-      ]
-    }
-  }
-}
-```
-
-The server loads `/absolute/path/to/repository/.tattoo/policy.json` by default; `--policy <path>` overrides it. Call `tattoo_check` with a normalized change set such as `{ "changes": { "files": [{ "operation": "modify", "path": "src/index.ts" }] } }`. The tool returns the existing `allow`, `warn`, or `block` result as JSON text. This is a workflow check over caller-supplied facts, not repository observation or agent enforcement. Stdio protocol output stays on stdout; diagnostics go to stderr.
-
-## Architecture and security
-
-Core receives normalized observations and decides only from those observations. `@tattoo-ai/config` reads and validates JSON outside core, while the CLI handles files, arguments and output. The Claude Code adapter handles only `PreToolUse` `Write` and `Edit`; Bash/Git changes, deletes, renames, dependency observation, and other vendors remain outside this milestone.
-
-Tattoo guarantees deterministic evaluation of the input it receives. It does not sandbox an agent, observe changes by itself, or prevent a broken or bypassed adapter from omitting or falsifying facts. See the [architecture](docs/architecture.md) and [security model](docs/security-model.md).
-
-## Roadmap
-
-Configuration loading and a local CLI are implemented in M2. The first Claude Code enforcement adapter is implemented in M3, the first local MCP workflow tool is implemented in M4, bounded natural-language rule authoring is implemented in M5, and evaluator benchmarks/release auditing are implemented in M6. Additional adapters, broader language understanding, end-to-end agent benchmarks, and package publication remain planned. See the [roadmap](docs/roadmap.md).
+The important limitation is observation. Tattoo can only evaluate what an adapter reports. A Bash command can modify files without going through the Claude `Write`/`Edit` hook, and the read-only MCP tool does not watch the repository. Use normal source control review, CI, sandboxing, and operating-system permissions alongside Tattoo.
 
 ## Development
 
-Requires Node 22+ and pnpm 10. Run `pnpm install --frozen-lockfile` followed by `pnpm check`. Run `pnpm --silent benchmark` for machine-readable fixed evaluator measurements and `pnpm release:check` for the package audit; both commands build first and do not publish or change versions.
+The repository uses a pnpm TypeScript workspace. Install dependencies and run the quality gate:
 
-Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup and test expectations, and [SECURITY.md](SECURITY.md) for private vulnerability reporting.
+```bash
+pnpm install --frozen-lockfile
+pnpm check
+```
+
+Useful checks:
+
+```bash
+pnpm test
+pnpm build
+pnpm --silent benchmark
+pnpm release:check
+```
+
+`pnpm benchmark` runs fixed correctness scenarios before measuring evaluator and Claude adapter overhead. It is not an end-to-end comparison of different agents. `pnpm release:check` audits package metadata and dry-run tarball contents; it does not publish packages or change versions.
+
+## Release
+
+The first GitHub release is [`v0.1.0`](https://github.com/salman0butt/Tattoo/releases/tag/v0.1.0). The project is MIT licensed. See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidance and [SECURITY.md](SECURITY.md) for private vulnerability reports.
 
 ## License
 
